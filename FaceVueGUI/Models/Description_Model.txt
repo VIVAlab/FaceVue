@@ -1,0 +1,4 @@
+m_patch = 8
+n_patch = 8
+window = 8
+K_cluster = 20

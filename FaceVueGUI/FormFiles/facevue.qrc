@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="FaceVue">
+    <file>../Resources/lens.png</file>
+    <file>../Resources/logo.png</file>
+  </qresource>
+</RCC>
