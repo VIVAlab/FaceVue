@@ -1,13 +1,13 @@
 #ifndef FaceVuee_H
 #define FaceVuee_H
 #include <QtGui/QMainWindow>
-#include "ui_FaceVue.h"
+#include "ui_facevue.h"
 #include <vector>
 #include "Core/ProcessThread.h"
 #include <QEvent>
 #include <QKeyEvent>
 #include <QFile>
-#include <FaceVue.h>
+#include <facevue.h>
 #include <opencv2/core/core.hpp>
 #include <opencv/cv.h>
 

@@ -15,14 +15,13 @@ HEADERS += facevue.h \
     faceRecognition.h
 
 # Unix-based systems 
-
 unix {
 CONFIG += link_pkgconfig
 PKGCONFIG += opencv
 }
 
 
-# Windows cflags/libs
+# windows-based 
 win32  {
     INCLUDEPATH += \
     "C:\API\opencv-build\install\include" \

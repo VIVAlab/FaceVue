@@ -1,4 +1,4 @@
-#include "Core\ProcessThread.h"
+#include "Core/ProcessThread.h"
 #include <QDebug>
 #include <facevue.h>
 #include "opencv2/highgui/highgui.hpp"

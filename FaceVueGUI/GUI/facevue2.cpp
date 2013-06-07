@@ -1,7 +1,7 @@
-#include "Gui/FaceVue2.h"
+#include "GUI/facevue2.h"
 #include <QDir>
-#include <QMessageBox.h>
-#include "Gui/addimage.h"
+#include <QMessageBox>
+#include "GUI/addimage.h"
 #include <QTableWidget>
 #include <QSize>
 #include <QDebug>

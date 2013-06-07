@@ -1,4 +1,4 @@
-#include "Gui/facevue2.h"
+#include "GUI/facevue2.h"
 #include <QtGui/QApplication>
 
 int main(int argc, char *argv[])

@@ -1,4 +1,4 @@
-#include "gui\addimage.h"
+#include "GUI/addimage.h"
 
 AddImage::AddImage(QWidget *parent)
 	: QDialog(parent)

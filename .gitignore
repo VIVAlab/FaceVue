@@ -221,5 +221,14 @@ Makefile
 *.a
 *.exe
 
+#qmake auto-generated source code
+ui_*.h
+moc_*.cpp
+qrc_*.cpp
+
+#facevue binary
+facevue
+
+
 
 
