@@ -64,11 +64,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
     ui.FaceR->setAutoFillBackground(true);
     ui.FaceR->setPalette(*red_Palette);
 
-    Mat img_cv;
-    QString str=QString("Resources//unknown.jpg");
-    img_cv=imread(str.toStdString(),1);
-    cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-    QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+    QImage img(":/FaceVue/Resources/unknown.jpg");
     ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 
     last_frame=0;   
@@ -126,13 +122,9 @@ void FaceVuee::addImg_to_database()
         image_color.release();
         ui.lineEdit->clear();
         isImage_filled=false;
-        Mat img_cv;
-        QString str1=QString("Resources//unknown.jpg");
-        img_cv=imread(str1.toStdString(),1);
-        cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-        QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+
+	QImage img (":/FaceVue/Resources/unknown.jpg");
         ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-        img_cv.release();
         ui.lineEdit->setText("New face added");
     }
     else
@@ -272,11 +264,7 @@ void FaceVuee::ChangeMode(int a)
 {
     if (a == 0)
     {
-        Mat img_cv;
-        QString str=QString("Resources//unknown.jpg");
-        img_cv=imread(str.toStdString(),1);
-        cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-        QImage image2((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+	QImage image2(":/FaceVue/Resources/unknown.jpg");
         ui.Lbl_faceR->setPixmap(QPixmap::fromImage(image2));
 
         ProcessThread::mutex.lock();
@@ -303,11 +291,8 @@ void FaceVuee::Logging(char* label,unsigned long frame)
             ui.FaceR->setPalette(*red_Palette);
 //            ui.loggingNameLBL->setText(QString(""));
             ui.Lbl_nameR->setText(QString("Unknown"));
-            Mat img_cv;
-            QString str=QString("Resources//unknown.jpg");
-            img_cv=imread(str.toStdString(),1);
-            cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-            QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+
+	    QImage img (":/FaceVue/Resources/unknown.jpg");
             ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
         }
 
@@ -322,11 +307,7 @@ void FaceVuee::Logging(char* label,unsigned long frame)
             ui.FaceR->setPalette(*red_Palette);
 //            ui.loggingNameLBL->setText(QString(""));
             ui.Lbl_nameR->setText(QString("No Face"));
-            Mat img_cv;
-            QString str=QString("Resources//unknown.jpg");
-            img_cv=imread(str.toStdString(),1);
-            cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-            QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+            QImage img (":/FaceVue/Resources/unknown.jpg");
             ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
         }
 
