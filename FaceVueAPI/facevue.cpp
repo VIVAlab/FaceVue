@@ -18,22 +18,22 @@ bool FaceVue::create_Database(vector<string> &filename)
 
     if (!(recognition->LoadImages(filename)))
     {
-        printf("At least one file is missing '%s'\n",filename);
-        return false;
+	    cout << "At least one file is missing: " << filename[0] << endl;
+	    return false;
     }
     else
     {
-        Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
-        recognition->ExtractKeypoints(temp, 4, 3 );
+	    Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
+	    recognition->ExtractKeypoints(temp, 4, 3 );
 
-        recognition->ReadClusters();
-        recognition->his_len=0;
-        for(int i=0;i<recognition->centers.size();i++)
-            recognition->his_len+=recognition->centers[i].rows;
+	    recognition->ReadClusters();
+	    recognition->his_len=0;
+	    for(int i=0;i<recognition->centers.size();i++)
+		    recognition->his_len+=recognition->centers[i].rows;
 
-        for ( int i=0; i< recognition->Face_database.size(); i++)
-            recognition->HistCreator(recognition->Face_database[i].image, recognition->Face_database[i].train_data_H);
-        return true;
+	    for ( int i=0; i< recognition->Face_database.size(); i++)
+		    recognition->HistCreator(recognition->Face_database[i].image, recognition->Face_database[i].train_data_H);
+	    return true;
     }
 }
 
@@ -80,15 +80,14 @@ void FaceVue::clear_Database()
 //Load cascade model
 bool FaceVue::load_Detection_Model(const string &filename)
 {
-
     // input should be like ->  "Models//lbpcascade_frontalface.xml"
-    detection_Model=new LBPCascadeClassifier();
+    detection_Model = new LBPCascadeClassifier();
     if (detection_Model->load(filename))
         return true;
     else
     {
-        printf("Couldn't load Face detector '%s'\n",filename);
-        return false;
+	    cout << "Unable to load face detector: " << filename[0] << endl;
+	    return false;
     }
 }
 
@@ -233,7 +232,7 @@ bool FaceVue::init_Camera(const string &filename)
 {
     if(!cap.open(filename))
     {
-        printf("Could not init video file '%s'\n",filename);
+	cout << "Unable to initilize the video file: " << filename[0] << endl;
         return false;
     }
     else

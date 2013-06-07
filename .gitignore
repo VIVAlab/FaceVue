@@ -213,3 +213,13 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+#Object files & makefiles & archive files(linux static libs) & lib & exe
+*.o
+Makefile
+*.lib
+*.a
+*.exe
+
+
+
