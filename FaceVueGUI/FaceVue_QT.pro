@@ -27,6 +27,7 @@ unix {
    CONFIG += link_pkgconfig
    PKGCONFIG += opencv
    QMAKE_CXXFLAGS += -fpermissive
+   DEFINES += "FACEVUE_ETC_DIR=/etc/facevue/"
 }
 
 # include the facevue lib

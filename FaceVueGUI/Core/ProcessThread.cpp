@@ -3,16 +3,29 @@
 #include <facevue.h>
 #include "opencv2/highgui/highgui.hpp"
 
+#define STR_EXPAND(tok) #tok
+#define STR(tok) STR_EXPAND(tok)
+
 //Process thread Constructor. We Load all the models and images to the database here.
 ProcessThread::ProcessThread(vector<string> imagess)
 {
         mode = Registration;
         takePicture = false;
         face_obj=new FaceVue();
+#ifdef _WIN32
         face_obj->load_Detection_Model("Models//lbpcascade_frontalface.xml");
         face_obj->load_Landmark_Model("Models//flandmark_model.dat");
         face_obj->load_Description_Model("Models//Description_Model.txt","Models//clusters.bin");
         face_obj->load_Recognition_Model("Models//Recognition_Model.txt");
+#elif __linux
+	//FACE_ETC_DIR must be defined in the .pro file
+        face_obj->load_Detection_Model(STR(FACEVUE_ETC_DIR) "Models/lbpcascade_frontalface.xml");
+        face_obj->load_Landmark_Model(STR(FACEVUE_ETC_DIR) "Models/flandmark_model.dat");
+        face_obj->load_Description_Model(STR(FACEVUE_ETC_DIR) "Models/Description_Model.txt", STR(FACEVUE_ETC_DIR) "Models/clusters.bin");
+        face_obj->load_Recognition_Model(STR(FACEVUE_ETC_DIR) "Models/Recognition_Model.txt");
+#endif
+
+
         face_obj->init_Recognition_Module(face_obj->description_Model,face_obj->recognition_Model);
         face_obj->create_Database(imagess);
 
