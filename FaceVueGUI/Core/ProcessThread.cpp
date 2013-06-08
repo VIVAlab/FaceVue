@@ -12,12 +12,12 @@ ProcessThread::ProcessThread(vector<string> imagess)
         mode = Registration;
         takePicture = false;
         face_obj=new FaceVue();
-#ifdef _WIN32
+#ifdef defined(Q_OS_WIN32)
         face_obj->load_Detection_Model("Models//lbpcascade_frontalface.xml");
         face_obj->load_Landmark_Model("Models//flandmark_model.dat");
         face_obj->load_Description_Model("Models//Description_Model.txt","Models//clusters.bin");
         face_obj->load_Recognition_Model("Models//Recognition_Model.txt");
-#elif __linux
+#elif defined(Q_OS_UNIX)
 	//FACE_ETC_DIR must be defined in the .pro file
         face_obj->load_Detection_Model(STR(FACEVUE_ETC_DIR) "Models/lbpcascade_frontalface.xml");
         face_obj->load_Landmark_Model(STR(FACEVUE_ETC_DIR) "Models/flandmark_model.dat");
