@@ -1,0 +1,10 @@
+sudo apt-get install qt4-qmake libqt4-dev libopencv-highgui-dev libopencv-core-dev
+make distclean
+qmake facevue.pro
+make
+mkdir ~/.facevue
+mkdir ~/.facevue/face
+sudo mkdir /etc/facevue
+sudo cp -R ./FaceVueGUI/Models /etc/facevue
+sudo cp ./FaceVueGUI/facevue /usr/bin
+

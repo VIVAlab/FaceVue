@@ -16,9 +16,9 @@ QMutex ProcessThread::mutex;
 // The current solution assumes the application is always executed from the
 // working directory. (this is a strong assumption)
 #if defined(Q_OS_UNIX)
-	#define FACE_DIR "~/.facevue/face"
+	#define FACE_DIR "~/.facevue/face/"
 #elif defined(Q_OS_WIN32)
-	#define FACE_DIR "./face"
+	#define FACE_DIR "./face/"
 #endif
 
 FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
@@ -219,14 +219,14 @@ void FaceVuee::SaveImage(string str,IplImage* img,Mat &img_rgb)
     char address_rgb[100];
     if(number<10)
     {
-        sprintf(address,FACE_DIR"/%s0%d_gry.jpg",str.c_str(),number);
-        sprintf(address_rgb,FACE_DIR"/%s0%d_rgb.jpg",str.c_str(),number);
+        sprintf(address,FACE_DIR"%s0%d_gry.jpg",str.c_str(),number);
+        sprintf(address_rgb,FACE_DIR"%s0%d_rgb.jpg",str.c_str(),number);
 //        ui.imageslistLST->insertItem(faces->size(),QString(str.c_str())+QString("0")+QString::number(number));
     }
     else
     {
-        sprintf(address,FACE_DIR"/%s%d_gry.jpg",str.c_str(),number);
-        sprintf(address_rgb,FACE_DIR"/%s%d_rgb.jpg",str.c_str(),number);
+        sprintf(address,FACE_DIR"%s%d_gry.jpg",str.c_str(),number);
+        sprintf(address_rgb,FACE_DIR"%s%d_rgb.jpg",str.c_str(),number);
 //        ui.imageslistLST->insertItem(faces->size(),QString(str.c_str())+QString(number));
     }
     cvSaveImage(address,img);
@@ -337,7 +337,7 @@ void FaceVuee::Logging(char* label,unsigned long frame)
             string label_(label);
             ui.Lbl_nameR->setText(QString((label_.substr(0,label_.length()-6)).c_str()));
             Mat img_cv;
-            QString str=(FACE_DIR"/"+QString((label_.substr(0,label_.length()-4)+"_rgb").c_str())+".jpg");
+            QString str=(FACE_DIR+QString((label_.substr(0,label_.length()-4)+"_rgb").c_str())+".jpg");
             img_cv=imread(str.toStdString(),1);
             cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
             QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);

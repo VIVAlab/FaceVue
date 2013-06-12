@@ -12,7 +12,7 @@ ProcessThread::ProcessThread(vector<string> imagess)
         mode = Registration;
         takePicture = false;
         face_obj=new FaceVue();
-#ifdef defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32)
         face_obj->load_Detection_Model("Models//lbpcascade_frontalface.xml");
         face_obj->load_Landmark_Model("Models//flandmark_model.dat");
         face_obj->load_Description_Model("Models//Description_Model.txt","Models//clusters.bin");
