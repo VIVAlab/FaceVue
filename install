@@ -1,4 +1,4 @@
-sudo apt-get install qt4-qmake libqt4-dev libopencv-highgui-dev libopencv-core-dev libcv-dev libcvaux-dev libhighgui-dev
+sudo apt-get install qt4-qmake libqt4-dev libopencv-highgui-dev libopencv-core-dev
 make distclean
 qmake facevue.pro
 make
