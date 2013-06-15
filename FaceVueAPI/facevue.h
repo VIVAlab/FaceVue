@@ -127,7 +127,6 @@ public:
 
 private:
 
-    VideoCapture cap;
     int *bbox;
     double *landmarks;
 

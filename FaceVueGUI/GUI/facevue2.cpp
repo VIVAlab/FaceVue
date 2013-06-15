@@ -381,9 +381,9 @@ void FaceVuee::DrawImage(FaceVue::FaceContent* f)
             circle(img,Point(f->mouth_x,f->mouth_y),3,cvScalar(0,255,255),CV_FILLED);
             rectangle(img,Point(f->p1_x,f->p1_y),Point(f->p2_x,f->p2_y),cvScalar(255,0,0),2);
         }
-        warpAffine( img, img, rot_mat, img.size());
-        flip(img,img,0);
-        warpAffine( img, img, rot_mat2, img.size());
+      //  warpAffine( img, img, rot_mat, img.size());
+        //flip(img,img,0);
+      //  warpAffine( img, img, rot_mat2, img.size());
 
 //        ellipse(img,Point(img.cols/2,img.rows/2),Size(126,90),90,0,360,Scalar(0,255,0),2);
 //        circle(img,Point(img.cols/2 - 50 , img.rows/2 - 30),5,Scalar(255,0,0),2);
@@ -407,9 +407,9 @@ void FaceVuee::DrawImage(FaceVue::FaceContent* f)
             circle(img,Point(f->mouth_x,f->mouth_y),3,cvScalar(0,255,255),CV_FILLED);
             rectangle(img,Point(f->p1_x,f->p1_y),Point(f->p2_x,f->p2_y),cvScalar(255,0,0),2);
         }
-        warpAffine( img, img, rot_mat, img.size());
-        flip(img,img,0);
-        warpAffine( img, img, rot_mat2, img.size());
+        //warpAffine( img, img, rot_mat, img.size());
+        //flip(img,img,0);
+        //warpAffine( img, img, rot_mat2, img.size());
 
         QImage image = QImage((uchar *)img.data, img.cols,img.rows, QImage::Format_RGB888);
         ui.recognitionDisplayLBL->setPixmap(QPixmap::fromImage(image));

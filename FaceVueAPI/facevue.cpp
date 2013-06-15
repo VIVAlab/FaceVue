@@ -2,7 +2,7 @@
 #include <QDebug>
 
 //Constructor
-FaceVue::FaceVue(): cap(0), detection_threshold(130.f)
+FaceVue::FaceVue(): detection_threshold(130.f)
 {
     bbox = (int*)malloc(4*sizeof(int));
     target_Face = new FaceContent();
@@ -213,45 +213,6 @@ void FaceVue::init_Recognition_Module(descriptionModel description_Model,
 void FaceVue::set_Detection_Threshold(double value)
 {
     detection_threshold=value;
-}
-
-//Camera Initialization
-bool FaceVue::init_Camera(int device)
-{
-    if(!cap.open(device))
-    {
-        printf("Could not init device '%i'\n",device);
-        return false;
-    }
-    else
-        return true;
-}
-
-//Camera Initialization
-bool FaceVue::init_Camera(const string &filename)
-{
-    if(!cap.open(filename))
-    {
-	cout << "Unable to initilize the video file: " << filename[0] << endl;
-        return false;
-    }
-    else
-        return true;
-}
-
-//Capture frame from  inited device or video file
-Mat FaceVue::capture_Frame(int channel)
-{
-    Mat image;
-    if(!cap.isOpened())
-    {
-        printf("The device is not opened");
-    }
-    else
-    {
-        cap.retrieve(image,channel);
-        return image;
-    }
 }
 
 //Return regions of detected faces
