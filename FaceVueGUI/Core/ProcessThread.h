@@ -10,63 +10,62 @@
 //#include "cascadedetect.hpp"
 //#include "faceRecognition.h"
 #include <facevue.h>
+#include "RegistrationMode.h"
+#include "RecognitionMode.h"
 
 using namespace cv;
 using namespace std;
 
-enum Mode{Registration,Recognition};
+enum Mode {
+	REGISTRATION_MODE,
+	RECOGNITION_MODE
+};
 
-class ProcessThread :public  QThread
+class FaceVuee;  //foreward declaration
+
+class ProcessThread : public  QThread
 {
-    Q_OBJECT
-public:
+	Q_OBJECT
+	public:
 
-    //Process thread Constructor. We Load all the models and images to the database here.
-    ProcessThread(vector<string>);
+		//Process thread Constructor. We Load all the models and images to the database here.
+		ProcessThread(FaceVuee* gui, vector<string>);
 
-    //Destructor
-    ~ProcessThread(void);
+		//Destructor
+		~ProcessThread(void);
 
-    static QMutex mutex;
-    Mat image;
-    Mode mode;
-    bool isStopped;
+		Mat image;
+		bool isStopped;
 
-    //"Run" part of the process thread.
-    void run();
+		//"Run" part of the process thread.
+		void run();
 
-    //Detect the face in frame image and Add it to database
-    IplImage* addImage(IplImage* image,Mat& image_color_140,double thresh,CvRect rect);
+		//Detect the face in frame image and Add it to database
+		IplImage* addImage(IplImage* image,Mat& image_color_140,CvRect rect);
 
-    //Find the face region in a frame
-    void findFace(IplImage* image ,double thresh);
-    bool takePicture;
-    bool dialogShowed;
-    bool key_pressed;
-    bool key_flag;
-    int capture_cnt;
-    unsigned long frame_cnt;
-    int take_picture_cnt;
-    //Add image to database and compute the descriptor for that
-    void AddImage(const Mat& image,const string& str);
+		//Find the face region in a frame
+		void findFace(IplImage* image);
 
-    //Delete image from database
-    void DeleteImage2(vector<string> name);
-    FaceVue *face_obj;
+		//Add image to database and compute the descriptor for that
+		void AddImage(const Mat& image,const string& str);
 
-private:
+		//Delete image from database
+		void DeleteImage2(vector<string> name);
+		FaceVue *face_obj;
+		void setProcessingMode (FaceVuee *gui, Mode mode);
 
-    char* name;
-
-    //Detect the face in image and recognize it
-    void detectFaceInImage(IplImage* image ,double thresh);
+	private:
+		QMutex mutex; //used to sync the processing mode
+		ProcessingMode *mode;
+		char* name;
+		unsigned int frame_cnt;
 
 signals:
-    void DrawImage(FaceVue::FaceContent*);
-    void Logging(char*,unsigned long);
-    void OutImage(IplImage*,Mat);
-    void FaceInElipse();
-    void Beep();
+		void DrawImage(FaceVue::FaceContent*);
+		void Logging(char*,unsigned long);
+		void OutImage(IplImage*,Mat);
+		void FaceInElipse();
+		void Beep();
 };
 
 #endif 

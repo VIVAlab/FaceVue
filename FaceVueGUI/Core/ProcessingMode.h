@@ -1,9 +1,10 @@
 #ifndef PROCESSINGMODE_H
 #define PROCESSINGMODE_H
 
-#include "../GUI/facevue2.h"
 #include <facevue.h>
 #include <opencv2/core/core.hpp>
+
+class FaceVuee; //foreward declaration
 
 class ProcessingMode
 {

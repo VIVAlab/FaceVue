@@ -19,9 +19,11 @@ class FaceVuee : public QMainWindow
 public:
         FaceVuee(QWidget *parent = 0, Qt::WFlags flags = 0);
         ~FaceVuee();
+	bool isReturnPressed ();
 
 protected:
         void keyPressEvent(QKeyEvent *);
+	void keyReleaseEvent(QKeyEvent *);
 private:
         Ui::FaceVueClass ui;
 	ProcessThread* process;
@@ -35,13 +37,13 @@ private:
         bool flag;
         IplImage* image_gray;
         Mat image_color;
+	bool keyPressed;
 private slots:
         void DrawImage(FaceVue::FaceContent*);
 	void ChangeMode(int);
         void Logging(char *,unsigned long);
         void addImg_to_database();
 //        void selectImage(QListWidgetItem *);
-
 	//void takePicture();
         void OutImage(IplImage*,Mat);
 

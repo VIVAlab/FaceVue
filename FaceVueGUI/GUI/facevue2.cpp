@@ -24,81 +24,82 @@ QMutex ProcessThread::mutex;
 FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
     : QMainWindow(parent, flags)
 {
-    flag=true;
-    ui.setupUi(this);
-    vector<string> images = FindImages(FACE_DIR);
+	keyPressed = false;
+	flag=true;
+	ui.setupUi(this);
+	vector<string> images = FindImages(FACE_DIR);
 
-//    ui.imageslistLST->setSelectionBehavior(QAbstractItemView::SelectRows);
-//    for(int i = 0;i<images.size();i++)
-//    {
-//        ui.imageslistLST->insertItem(i,QString(images[i].substr(images[i].find_last_of("\\")+1,images[i].length() - images[i].find_last_of("\\") - 9).c_str()));
-//    }
+	//    ui.imageslistLST->setSelectionBehavior(QAbstractItemView::SelectRows);
+	//    for(int i = 0;i<images.size();i++)
+	//    {
+	//        ui.imageslistLST->insertItem(i,QString(images[i].substr(images[i].find_last_of("\\")+1,images[i].length() - images[i].find_last_of("\\") - 9).c_str()));
+	//    }
 
-    isImage_filled=false;
-    QTableWidgetItem *tWidget;
+	isImage_filled=false;
+	QTableWidgetItem *tWidget;
 
-    ui.tableWidget->insertColumn(0);
-    ui.tableWidget->setAutoScroll(true);
-
-
-    for(int i = 0;i<images.size();i++)
-    {
-
-        tWidget=new QTableWidgetItem();
-        tWidget->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        ui.tableWidget->insertRow(i);
-
-        Mat img_cv;
-        QString str=QString((images[i].substr(0,images[i].length()-8)+"_rgb.jpg").c_str());
-        img_cv=imread(str.toStdString(),1);
-        cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-        QImage sidebar_project_icon_Image((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
-        QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
-        tWidget->setText(QString(images[i].substr(images[i].find_last_of("\\")+1,images[i].length() - images[i].find_last_of("\\") - 11).c_str()));
-        tWidget->setWhatsThis(QString(images[i].substr(images[i].find_last_of("//")+1,images[i].length() - images[i].find_last_of("//") - 9).c_str()));
-        tWidget->setIcon(sidebar_project_icon_Icon);
-
-        ui.tableWidget->setItem(i,0,tWidget);
+	ui.tableWidget->insertColumn(0);
+	ui.tableWidget->setAutoScroll(true);
 
 
-    }   
+	for(int i = 0;i<images.size();i++)
+	{
 
-    red_Palette = new QPalette();
-    red_Palette->setColor(QPalette::Window, Qt::red);
+		tWidget=new QTableWidgetItem();
+		tWidget->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+		ui.tableWidget->insertRow(i);
 
-    green_Palette = new QPalette();
-    green_Palette->setColor(QPalette::Window, Qt::green);
+		Mat img_cv;
+		QString str=QString((images[i].substr(0,images[i].length()-8)+"_rgb.jpg").c_str());
+		img_cv=imread(str.toStdString(),1);
+		cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
+		QImage sidebar_project_icon_Image((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+		QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
+		tWidget->setText(QString(images[i].substr(images[i].find_last_of("\\")+1,images[i].length() - images[i].find_last_of("\\") - 11).c_str()));
+		tWidget->setWhatsThis(QString(images[i].substr(images[i].find_last_of("//")+1,images[i].length() - images[i].find_last_of("//") - 9).c_str()));
+		tWidget->setIcon(sidebar_project_icon_Icon);
 
-    ui.FaceD->setAutoFillBackground(true);
-    ui.FaceD->setPalette(*red_Palette);
-
-    ui.FaceR->setAutoFillBackground(true);
-    ui.FaceR->setPalette(*red_Palette);
-
-    QImage img(":/FaceVue/Resources/unknown.jpg");
-    ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-
-    last_frame=0;   
-    last_label=" ";
-
-    connect(ui.add_BTN,SIGNAL(clicked()),this,SLOT(addImg_to_database()));
-    connect(ui.deleteBTN,SIGNAL(clicked()),this,SLOT(DeleteImage()));
-    connect(ui.widgetTAB,SIGNAL(currentChanged(int)),this,SLOT(ChangeMode(int)));
+		ui.tableWidget->setItem(i,0,tWidget);
 
 
+	}   
 
-    process = new ProcessThread(images);
+	red_Palette = new QPalette();
+	red_Palette->setColor(QPalette::Window, Qt::red);
 
-    connect(process,SIGNAL(DrawImage(FaceVue::FaceContent*)),this,SLOT(DrawImage(FaceVue::FaceContent*)));
-    connect(process,SIGNAL(Logging( char *,unsigned long)),this,SLOT(Logging(char *,unsigned long)));
+	green_Palette = new QPalette();
+	green_Palette->setColor(QPalette::Window, Qt::green);
 
-    qRegisterMetaType< Mat >("Mat");
+	ui.FaceD->setAutoFillBackground(true);
+	ui.FaceD->setPalette(*red_Palette);
 
-    connect(process,SIGNAL(OutImage(IplImage*,Mat)),this,SLOT(OutImage(IplImage*,Mat)));
-    connect(process,SIGNAL(FaceInElipse()),this,SLOT(FaceInElipse()));
+	ui.FaceR->setAutoFillBackground(true);
+	ui.FaceR->setPalette(*red_Palette);
 
-    connect(process,SIGNAL(Beep()),this,SLOT(Beep()));
-    process->start();
+	QImage img(":/FaceVue/Resources/unknown.jpg");
+	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
+
+	last_frame=0;   
+	last_label=" ";
+
+	connect(ui.add_BTN,SIGNAL(clicked()),this,SLOT(addImg_to_database()));
+	connect(ui.deleteBTN,SIGNAL(clicked()),this,SLOT(DeleteImage()));
+	connect(ui.widgetTAB,SIGNAL(currentChanged(int)),this,SLOT(ChangeMode(int)));
+
+
+
+	process = new ProcessThread(images);
+
+	connect(process,SIGNAL(DrawImage(FaceVue::FaceContent*)),this,SLOT(DrawImage(FaceVue::FaceContent*)));
+	connect(process,SIGNAL(Logging( char *,unsigned long)),this,SLOT(Logging(char *,unsigned long)));
+
+	qRegisterMetaType< Mat >("Mat");
+
+	connect(process,SIGNAL(OutImage(IplImage*,Mat)),this,SLOT(OutImage(IplImage*,Mat)));
+	connect(process,SIGNAL(FaceInElipse()),this,SLOT(FaceInElipse()));
+
+	connect(process,SIGNAL(Beep()),this,SLOT(Beep()));
+	process->start();
 }
 
 FaceVuee::~FaceVuee()
@@ -146,30 +147,32 @@ void FaceVuee::addImg_to_database()
 
 void FaceVuee::OutImage(IplImage* image,Mat image_color_140)
 {    
-    flag=true;
+	flag=true;
 
-    if(image)
-    {
-        IplImage* img = cvCreateImage(cvSize(128,128),8,3);
-        image_gray = cvCreateImage(cvSize(128,128),8,3);
-        cv::cvtColor(image_color_140,image_color_140,CV_RGB2BGR);
-        cvCvtColor(image,img,CV_GRAY2RGB);
-        cvCvtColor(image,image_gray,CV_GRAY2RGB);
-        QImage image140 = QImage((uchar *)image_color_140.data, image_color_140.cols,image_color_140.rows,image_color_140.step, QImage::Format_RGB888);
-        ui.Lbl_faceR->setPixmap(QPixmap::fromImage(image140));
-        cv::cvtColor(image_color_140,image_color_140,CV_BGR2RGB);
-        image_color_140.copyTo(image_color);
-        cvReleaseImage(&image);
-        cvReleaseImage(&img);
-        image_color_140.release();
-        isImage_filled=true;
+	if(image)
+	{
+		IplImage* img = cvCreateImage(cvSize(128,128),8,3);
+		image_gray = cvCreateImage(cvSize(128,128),8,3);
+		cv::cvtColor(image_color_140,image_color_140,CV_RGB2BGR);
+		cvCvtColor(image,img,CV_GRAY2RGB);
+		cvCvtColor(image,image_gray,CV_GRAY2RGB);
+		QImage image140 = QImage((uchar *)image_color_140.data, 
+				         image_color_140.cols,
+					 image_color_140.rows,
+					 image_color_140.step, 
+					 QImage::Format_RGB888);
+		ui.Lbl_faceR->setPixmap(QPixmap::fromImage(image140));
+		cv::cvtColor(image_color_140,image_color_140,CV_BGR2RGB);
+		image_color_140.copyTo(image_color);
+		cvReleaseImage(&image);
+		cvReleaseImage(&img);
+		image_color_140.release();
+		isImage_filled=true;
 
-        ProcessThread::mutex.lock();
-        process->takePicture = false;
-        process->key_flag=true;
-        process->dialogShowed = false;
-        ProcessThread::mutex.unlock();
-    }
+		ProcessThread::mutex.lock();
+		process->takePicture = false;
+		process->key_flag=true;
+	}
 }
 
 void FaceVuee::DeleteImage()
@@ -352,82 +355,23 @@ void FaceVuee::Logging(char* label,unsigned long frame)
     memcpy(last_label, temp.c_str(), temp.size() + 1);
 
 }
-void FaceVuee::DrawImage(FaceVue::FaceContent* f)
-{
-    Mat img;
-    ProcessThread::mutex.lock();
-    cvtColor(process->image,img,CV_BGR2RGB);
-    ProcessThread::mutex.unlock();
-
-    Point center = Point( img.cols/2, img.rows/2 );
-    double angle = 90.0;
-    double scale = 1;
-
-    Mat rot_mat = getRotationMatrix2D( center, angle, scale );
-    Mat rot_mat2 = getRotationMatrix2D( center, -1.f*angle, scale );
-
-    if(process->mode == Registration)
-    {                       
-//        rectangle(img,Point(f->p1_x,f->p1_y),Point(f->p2_x,f->p2_y),cvScalar(255,0,0),2);               
-        ui.deleteBTN->setVisible(true);
-        ui.lineEdit->setVisible(true);
-        ui.add_BTN->setVisible(true);
-        ui.label_name->setVisible(true);
-        ui.Lbl_nameR->setVisible(false);
-        if(f->index!=-1)
-        {
-            circle(img,Point(f->right_eye_x,f->right_eye_y),3,Scalar(0,0,255),CV_FILLED);
-            circle(img,Point(f->left_eye_x,f->left_eye_y),3,Scalar(0,0,255),CV_FILLED);
-            circle(img,Point(f->mouth_x,f->mouth_y),3,cvScalar(0,255,255),CV_FILLED);
-            rectangle(img,Point(f->p1_x,f->p1_y),Point(f->p2_x,f->p2_y),cvScalar(255,0,0),2);
-        }
-      //  warpAffine( img, img, rot_mat, img.size());
-        //flip(img,img,0);
-      //  warpAffine( img, img, rot_mat2, img.size());
-
-//        ellipse(img,Point(img.cols/2,img.rows/2),Size(126,90),90,0,360,Scalar(0,255,0),2);
-//        circle(img,Point(img.cols/2 - 50 , img.rows/2 - 30),5,Scalar(255,0,0),2);
-//        circle(img,Point(img.cols/2 + 50 , img.rows/2 - 30),5,Scalar(255,0,0),2);
-        QImage image = QImage((uchar *)img.data, img.cols,img.rows, QImage::Format_RGB888);
-        ui.registrationDisplayLBL->setPixmap(QPixmap::fromImage(image));
-    }
-    else if(process->mode == Recognition)
-    {
-
-        ui.deleteBTN->setVisible(false);
-
-        ui.lineEdit->setVisible(false);
-        ui.add_BTN->setVisible(false);
-        ui.label_name->setVisible(false);
-        ui.Lbl_nameR->setVisible(true);
-        if(ui.overlayCKB->isChecked() && f->index!=-1)
-        {
-            circle(img,Point(f->right_eye_x,f->right_eye_y),3,Scalar(0,0,255),CV_FILLED);
-            circle(img,Point(f->left_eye_x,f->left_eye_y),3,Scalar(0,0,255),CV_FILLED);
-            circle(img,Point(f->mouth_x,f->mouth_y),3,cvScalar(0,255,255),CV_FILLED);
-            rectangle(img,Point(f->p1_x,f->p1_y),Point(f->p2_x,f->p2_y),cvScalar(255,0,0),2);
-        }
-        //warpAffine( img, img, rot_mat, img.size());
-        //flip(img,img,0);
-        //warpAffine( img, img, rot_mat2, img.size());
-
-        QImage image = QImage((uchar *)img.data, img.cols,img.rows, QImage::Format_RGB888);
-        ui.recognitionDisplayLBL->setPixmap(QPixmap::fromImage(image));
-    }
-
-}
 
 void FaceVuee::keyPressEvent(QKeyEvent *event)
 {
-    if(process->key_flag){
+	if (event->key()==Qt::Key_Return)
+		keyPressed = true;
+	QMainWindow::keyPressEvent (event);
+}
 
-        if (event->key()==Qt::Key_Return)
-        {
-            ProcessThread::mutex.lock();
-            process->key_pressed=true;
-            process->key_flag=false;
-            ProcessThread::mutex.unlock();
-        }
-    }
+void
+FaceVue::keyReleaseEvent (QKeyEvent *event)
+{	if (event->key()==Qt::Key_Return)
+		keyPressed = false;
+	QMainWindow::keyReleaseEvent (event);
+}
 
+bool
+FaceVue::isReturnPressed ()
+{
+	return keyPressed;
 }
