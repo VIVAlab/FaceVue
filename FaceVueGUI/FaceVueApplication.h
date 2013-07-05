@@ -10,7 +10,6 @@ class FaceVueApplication : public QApplication
 		~FaceVueApplication() {}
 		bool notify(QObject *rec, QEvent *ev)
 		{
-			printf ("::notify function is called\n");
 			return QApplication::notify(rec, ev);
 		}
 };

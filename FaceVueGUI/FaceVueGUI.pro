@@ -12,7 +12,8 @@ SOURCES += main.cpp\
 HEADERS  += \
     Core/ProcessThread.h \   
     GUI/addimage.h \
-    GUI/facevue2.h
+    GUI/facevue2.h\
+    FaceVueApplication.h
 
 FORMS    += \
     FormFiles/facevue.ui
