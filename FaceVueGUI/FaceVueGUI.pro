@@ -6,11 +6,17 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
     Core/ProcessThread.cpp \   
+    Core/ProcessingMode.cpp\
+    Core/RegistrationMode.cpp\
+    Core/RecognitionMode.cpp\
     GUI/addimage.cpp \
     GUI/facevue2.cpp
 
 HEADERS  += \
     Core/ProcessThread.h \   
+    Core/ProcessingMode.h\
+    Core/RegistrationMode.h\
+    Core/RecognitionMode.h\
     GUI/addimage.h \
     GUI/facevue2.h\
     FaceVueApplication.h

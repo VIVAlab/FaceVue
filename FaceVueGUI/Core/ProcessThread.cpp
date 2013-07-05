@@ -86,7 +86,7 @@ void ProcessThread::run()
                         mutex.unlock();
                     else
                     {
-                        if(takePicture )
+                        if(takePicture)
                         {
 
                             cnt++;
@@ -104,6 +104,7 @@ void ProcessThread::run()
                                 cnt = 0;
 //                                key_pressed=false;
                                 take_picture_cnt=0;
+				mutex.unlock();
                             }
                         }
                         else
