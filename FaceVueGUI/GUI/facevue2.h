@@ -32,7 +32,6 @@ private:
 	QPalette *red_Palette;
 	QPalette *green_Palette;
         int last_frame;
-        char* last_label;
         bool isImage_filled;
         bool flag;
         IplImage* image_gray;

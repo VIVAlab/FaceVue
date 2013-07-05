@@ -9,6 +9,8 @@ RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 void 
 RecognitionMode::process (IplImage *img)
 {
+	printf ("recognition-mode processing\n");
+	/*
 	//recognize
 	CvRect rect=face_obj->detect_FaceROI(image);
 	IplImage* warp_dst = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
@@ -60,6 +62,7 @@ RecognitionMode::process (IplImage *img)
 
 	QImage image = QImage((uchar *)img.data, img.cols,img.rows, QImage::Format_RGB888);
 	ui.recognitionDisplayLBL->setPixmap(QPixmap::fromImage(image));
+	*/
 }
 
 

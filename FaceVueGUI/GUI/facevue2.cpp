@@ -8,8 +8,6 @@
 #include <QLabel>
 #include <stdio.h>
 
-QMutex ProcessThread::mutex;
-
 // TODO: for windows there are better alternatives 
 // (the installation directory can be registered using QSetting and retreived)
 // This can be investigated
@@ -42,7 +40,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	ui.tableWidget->setAutoScroll(true);
 
 
-	for(int i = 0;i<images.size();i++)
+	for(unsigned int i = 0;i<images.size();i++)
 	{
 
 		tWidget=new QTableWidgetItem();
@@ -53,10 +51,16 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 		QString str=QString((images[i].substr(0,images[i].length()-8)+"_rgb.jpg").c_str());
 		img_cv=imread(str.toStdString(),1);
 		cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-		QImage sidebar_project_icon_Image((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+		QImage sidebar_project_icon_Image((uchar*)img_cv.data, 
+				                  img_cv.cols, 
+						  img_cv.rows,
+						  img_cv.step, 
+						  QImage::Format_RGB888);
 		QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
-		tWidget->setText(QString(images[i].substr(images[i].find_last_of("\\")+1,images[i].length() - images[i].find_last_of("\\") - 11).c_str()));
-		tWidget->setWhatsThis(QString(images[i].substr(images[i].find_last_of("//")+1,images[i].length() - images[i].find_last_of("//") - 9).c_str()));
+		tWidget->setText(QString(images[i].substr(images[i].find_last_of("\\")+1,
+					 images[i].length() - images[i].find_last_of("\\") - 11).c_str()));
+		tWidget->setWhatsThis(QString(images[i].substr(images[i].find_last_of("//")+1,
+					      images[i].length() - images[i].find_last_of("//") - 9).c_str()));
 		tWidget->setIcon(sidebar_project_icon_Icon);
 
 		ui.tableWidget->setItem(i,0,tWidget);
@@ -80,15 +84,12 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 
 	last_frame=0;   
-	last_label=" ";
 
 	connect(ui.add_BTN,SIGNAL(clicked()),this,SLOT(addImg_to_database()));
 	connect(ui.deleteBTN,SIGNAL(clicked()),this,SLOT(DeleteImage()));
 	connect(ui.widgetTAB,SIGNAL(currentChanged(int)),this,SLOT(ChangeMode(int)));
 
-
-
-	process = new ProcessThread(images);
+	process = new ProcessThread(this, images);
 
 	connect(process,SIGNAL(DrawImage(FaceVue::FaceContent*)),this,SLOT(DrawImage(FaceVue::FaceContent*)));
 	connect(process,SIGNAL(Logging( char *,unsigned long)),this,SLOT(Logging(char *,unsigned long)));
@@ -106,9 +107,7 @@ FaceVuee::~FaceVuee()
 {
     delete red_Palette;
     delete green_Palette;
-    ProcessThread::mutex.lock();
     process->isStopped = true;
-    ProcessThread::mutex.unlock();
     process->wait();
     delete process;        
 }
@@ -296,64 +295,61 @@ void FaceVuee::ChangeMode(int a)
 void FaceVuee::Logging(char* label,unsigned long frame)
 {    
 
-    if(!std::string(label).compare("Unknown"))
-    {
-        if(frame-last_frame>5)
-        {
-            //ui.deleteBTN->setDisabled(false);
-            ui.FaceD->setPalette(*green_Palette);
-            ui.FaceR->setPalette(*red_Palette);
-//            ui.loggingNameLBL->setText(QString(""));
-            ui.Lbl_nameR->setText(QString("Unknown"));
+	if(!std::string(label).compare("Unknown"))
+	{
+		if(frame-last_frame>5)
+		{
+			//ui.deleteBTN->setDisabled(false);
+			ui.FaceD->setPalette(*green_Palette);
+			ui.FaceR->setPalette(*red_Palette);
+			//            ui.loggingNameLBL->setText(QString(""));
+			ui.Lbl_nameR->setText(QString("Unknown"));
 
-	    QImage img (":/FaceVue/Resources/unknown.jpg");
-            ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-        }
-
-
-    }
-    else if(!std::string(label).compare("NoFace"))
-    {
-        if(frame-last_frame>5)
-        {
-            //ui.deleteBTN->setDisabled(false);
-            ui.FaceD->setPalette(*red_Palette);
-            ui.FaceR->setPalette(*red_Palette);
-//            ui.loggingNameLBL->setText(QString(""));
-            ui.Lbl_nameR->setText(QString("No Face"));
-            QImage img (":/FaceVue/Resources/unknown.jpg");
-            ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-        }
+			QImage img (":/FaceVue/Resources/unknown.jpg");
+			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
+		}
 
 
+	}
+	else if(!std::string(label).compare("NoFace"))
+	{
+		if(frame-last_frame>5)
+		{
+			//ui.deleteBTN->setDisabled(false);
+			ui.FaceD->setPalette(*red_Palette);
+			ui.FaceR->setPalette(*red_Palette);
+			//            ui.loggingNameLBL->setText(QString(""));
+			ui.Lbl_nameR->setText(QString("No Face"));
+			QImage img (":/FaceVue/Resources/unknown.jpg");
+			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
+		}
 
-    }
-    else
-    {
-        //ui.deleteBTN->setDisabled(true);
-        if(frame-last_frame>5)
-        {
 
-            ui.FaceD->setPalette(*green_Palette);
-            ui.FaceR->setPalette(*green_Palette);
-//                ui.loggingNameLBL->setText(QString(label));
-            string label_(label);
-            ui.Lbl_nameR->setText(QString((label_.substr(0,label_.length()-6)).c_str()));
-            Mat img_cv;
-            QString str=(FACE_DIR+QString((label_.substr(0,label_.length()-4)+"_rgb").c_str())+".jpg");
-            img_cv=imread(str.toStdString(),1);
-            cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-            QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
-            ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 
-        }
-        last_frame= frame;
+	}
+	else
+	{
+		//ui.deleteBTN->setDisabled(true);
+		if(frame-last_frame>5)
+		{
 
-    }
-    string temp=string(label);
-    last_label = (char *)malloc(temp.size() + 1);
-    memcpy(last_label, temp.c_str(), temp.size() + 1);
+			ui.FaceD->setPalette(*green_Palette);
+			ui.FaceR->setPalette(*green_Palette);
+			//                ui.loggingNameLBL->setText(QString(label));
+			string label_(label);
+			ui.Lbl_nameR->setText(QString((label_.substr(0,label_.length()-6)).c_str()));
+			Mat img_cv;
+			QString str=(FACE_DIR+QString((label_.substr(0,label_.length()-4)+"_rgb").c_str())+".jpg");
+			img_cv=imread(str.toStdString(),1);
+			cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
+			QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
+			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 
+		}
+		last_frame= frame;
+
+	}
+	string temp=string(label);
 }
 
 void FaceVuee::keyPressEvent(QKeyEvent *event)

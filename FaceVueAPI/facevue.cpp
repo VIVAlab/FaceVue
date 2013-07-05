@@ -28,10 +28,10 @@ bool FaceVue::create_Database(vector<string> &filename)
 
 	    recognition->ReadClusters();
 	    recognition->his_len=0;
-	    for(int i=0;i<recognition->centers.size();i++)
+	    for (unsigned int i=0;i<recognition->centers.size();i++)
 		    recognition->his_len+=recognition->centers[i].rows;
 
-	    for ( int i=0; i< recognition->Face_database.size(); i++)
+	    for (unsigned int i=0; i< recognition->Face_database.size(); i++)
 		    recognition->HistCreator(recognition->Face_database[i].image, recognition->Face_database[i].train_data_H);
 	    return true;
     }
@@ -50,7 +50,7 @@ void FaceVue::add_to_Database(Mat image, string name)
     face2.label_s=name.substr(name.find_last_of("//")+1,(name.find_last_of(".jpg")-name.find_last_of("//")-4));
 
     recognition->his_len=0;
-    for(int i=0;i<recognition->centers.size();i++)
+    for (unsigned int i=0;i<recognition->centers.size();i++)
         recognition->his_len+=recognition->centers[i].rows;
 
     recognition->HistCreator(face2.image, face2.train_data_H);
@@ -249,7 +249,7 @@ CvRect FaceVue::detect_FaceROI(const IplImage *frame)
     // stores detected face ROI
     CvRect rect;
 
-    for (int iface = 0; iface < faces.size(); ++iface)
+    for (unsigned int iface = 0; iface < faces.size(); ++iface)
     {
         bbox[0] = faces[iface].x;
         bbox[1] = faces[iface].y;
@@ -377,7 +377,7 @@ string FaceVue::recognize_Face(const Mat &face)
 //Function for removing space in Loading information
 void FaceVue::stripSpace(string &str)
 {
-    for (int i=0;i<str.length();i++)
+    for (unsigned int i=0;i<str.length();i++)
     {
         if (str[i]==' ') {
             str.erase(i,1);

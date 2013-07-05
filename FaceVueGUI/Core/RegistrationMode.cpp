@@ -8,6 +8,8 @@ RegistrationMode::RegistrationMode(FaceVuee *gui, FaceVue *facevue)
 void 
 RegistrationMode::process (IplImage *img)
 {
+	printf("registration-mode processing\n");
+	/*
 	//process image for registration
 	IplImage z = *img;
 	CvRect rect=facevue->detect_FaceROI(&z);
@@ -77,5 +79,6 @@ RegistrationMode::process (IplImage *img)
 	//        circle(img,Point(img.cols/2 + 50 , img.rows/2 - 30),5,Scalar(255,0,0),2);
 	QImage image = QImage((uchar *)img.data, img.cols,img.rows, QImage::Format_RGB888);
 	ui.registrationDisplayLBL->setPixmap(QPixmap::fromImage(image));
+	*/
 }
 

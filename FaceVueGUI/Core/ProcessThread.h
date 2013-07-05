@@ -12,6 +12,7 @@
 #include <facevue.h>
 #include "RegistrationMode.h"
 #include "RecognitionMode.h"
+#include <QMutex>
 
 using namespace cv;
 using namespace std;
@@ -60,7 +61,7 @@ class ProcessThread : public  QThread
 		char* name;
 		unsigned int frame_cnt;
 
-signals:
+	signals:
 		void DrawImage(FaceVue::FaceContent*);
 		void Logging(char*,unsigned long);
 		void OutImage(IplImage*,Mat);
