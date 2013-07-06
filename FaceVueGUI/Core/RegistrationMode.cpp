@@ -7,7 +7,7 @@ RegistrationMode::RegistrationMode(FaceVuee *gui, FaceVue *facevue)
 {
 }
 
-QImage*
+Mat
 RegistrationMode::process (IplImage *image)
 {
 	/*
@@ -74,7 +74,8 @@ RegistrationMode::process (IplImage *image)
 	//ellipse(img,Point(img.cols/2,img.rows/2),Size(126,90),90,0,360,Scalar(0,255,0),2);
 	//circle(img,Point(img.cols/2 - 50 , img.rows/2 - 30),5,Scalar(255,0,0),2);
 	//circle(img,Point(img.cols/2 + 50 , img.rows/2 - 30),5,Scalar(255,0,0),2);
-	return new QImage((uchar *)img.data, img.cols, img.rows, QImage::Format_RGB888);
+
+	return img;
 }
 
 QLabel*

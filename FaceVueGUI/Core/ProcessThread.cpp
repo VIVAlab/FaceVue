@@ -75,16 +75,16 @@ void ProcessThread::run()
 
 		mutex.lock();
 		IplImage *img = &(IplImage)image;
-		QImage *qimg = mode->process(img);
+		Mat matimg = mode->process(img);
+		QImage qimg((uchar *)matimg.data, matimg.cols, matimg.rows, QImage::Format_RGB888);
 		QLabel *label = mode->getProperLabel();
 		mutex.unlock();
 
 		QWaitCondition cond;
 		QMutex drawMutex;
 		drawMutex.lock();
-		emit drawImage (qimg, &cond, &drawMutex, label);
+		emit drawImage (&qimg, &cond, &drawMutex, label);
 		cond.wait (&drawMutex);
-		delete qimg;
 		drawMutex.unlock();
 	}
 };

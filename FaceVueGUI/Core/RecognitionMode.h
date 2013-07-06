@@ -7,7 +7,7 @@ class RecognitionMode : public ProcessingMode
 {
 public:
 	RecognitionMode(FaceVuee *gui, FaceVue *facevue);
-	virtual QImage * process (IplImage *img);
+	virtual Mat process (IplImage *img);
 	virtual QLabel * getProperLabel();
 };
 

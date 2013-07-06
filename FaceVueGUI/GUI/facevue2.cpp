@@ -373,5 +373,6 @@ FaceVuee::drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *l
 	mutex->lock();
 	label->setPixmap (QPixmap::fromImage (*img));
 	cond->wakeAll();
+	mutex->unlock();
 }
 

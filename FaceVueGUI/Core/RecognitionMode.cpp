@@ -7,10 +7,11 @@ RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 }
 
 /* recognize a face in the image and then draw it */
-QImage*
+Mat
 RecognitionMode::process (IplImage *img)
 {
-	return new QImage;
+	Mat m;
+	return m;
 	/*
 	//recognize
 	CvRect rect=face_obj->detect_FaceROI(image);
