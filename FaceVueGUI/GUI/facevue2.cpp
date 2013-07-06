@@ -90,8 +90,6 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 
 	process = new ProcessThread(this, images);
 
-
-	//connect(process,SIGNAL(DrawImage(FaceVue::FaceContent*)),this,SLOT(DrawImage(FaceVue::FaceContent*)));
 	connect(process,SIGNAL(Logging( char *,unsigned long)),this,SLOT(Logging(char *,unsigned long)));
 	connect(process,
 	  	SIGNAL(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
@@ -99,11 +97,19 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 		SLOT(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
 		Qt::QueuedConnection);
 
-	qRegisterMetaType< Mat >("Mat");
+	qRegisterMetaType <Mat>("Mat");
 
-	connect(process,SIGNAL(OutImage(IplImage*,Mat)),this,SLOT(OutImage(IplImage*,Mat)));
+	connect (process,
+		 SIGNAL(OutImage(IplImage*,Mat)),
+		 this,
+		 SLOT(OutImage(IplImage*,Mat)), 
+		 Qt::QueuedConnection);
 
-	connect(process,SIGNAL(Beep()),this,SLOT(Beep()));
+	connect (process,
+		 SIGNAL(Beep()),
+		 this,
+		 SLOT(Beep()));
+
 	process->start();
 }
 

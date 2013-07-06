@@ -3,6 +3,9 @@
 
 #include "ProcessingMode.h"
 
+//minimum number of frames required between face registrations
+#define SNAPSHOT_FRAME_GAP 30  
+
 class RegistrationMode : public ProcessingMode
 {
 public:
@@ -10,6 +13,8 @@ public:
 	virtual Mat process (IplImage *img);
 	virtual QLabel* getProperLabel();
 
+private:
+	unsigned int countDown;
 };
 
 

@@ -12,7 +12,8 @@ FaceVue::FaceVue(): detection_threshold(130.f)
 }
 
 //Create Database
-bool FaceVue::create_Database(vector<string> &filename)
+bool 
+FaceVue::create_Database(vector<string> &filename)
 {
     recognition->Face_database.clear();
 

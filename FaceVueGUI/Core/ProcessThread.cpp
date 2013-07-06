@@ -89,31 +89,10 @@ void ProcessThread::run()
 	}
 };
 
-//Find the face region in a frame
-void ProcessThread::findFace(IplImage* image)
-{
-    int *bbox2=(int*)malloc(4*sizeof(int));
-    IplImage* input = cvCreateImage(cvSize(image->width,image->height),IPL_DEPTH_8U,1);
-    std::vector<Rect> faces=face_obj->detect_ALLFacesROI(image,input);
-    double value;
-
-    for (unsigned int iface = 0; iface < faces.size(); ++iface)
-    {
-        bbox2[0] = faces[iface].x;
-        bbox2[1] = faces[iface].y;
-        bbox2[2] = faces[iface].x + faces[iface].width;
-        bbox2[3] = faces[iface].y + faces[iface].height;
-        face_obj->my_Landmark(input,&value,bbox2);
-    }
-
-    cvReleaseImage(&input);
-    delete[] bbox2;
-}
-
 //Detect the face in frame image and Add it to database
-IplImage* ProcessThread::addImage(IplImage* image,Mat& image_color_140, CvRect rect)
+IplImage* ProcessThread::addImage(IplImage* image, CvRect rect)
 {
-	//CvRect rect=face_obj->detect_FaceROI(image);
+	Mat image_color_140;
 	IplImage* warp_dst = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
 	face_obj->align_Face(image,rect, warp_dst);
 	IplImage* out = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
@@ -141,7 +120,9 @@ IplImage* ProcessThread::addImage(IplImage* image,Mat& image_color_140, CvRect r
 		cvReleaseImage(&out);
 
 	cvReleaseImage(&warp_dst);
+	emit OutImage (out, image_color_140);
 	return out;
+
 }
 
 
