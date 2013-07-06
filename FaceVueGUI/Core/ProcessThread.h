@@ -62,10 +62,8 @@ class ProcessThread : public  QThread
 		unsigned int frame_cnt;
 
 	signals:
-		void DrawImage(FaceVue::FaceContent*);
 		void Logging(char*,unsigned long);
 		void OutImage(IplImage*,Mat);
-		void FaceInElipse();
 		void Beep();
 };
 

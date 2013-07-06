@@ -403,7 +403,7 @@ namespace cv
 		return true;
 	}
 
-	LBPEvaluator* LBPEvaluator::create( int featureType )
+	LBPEvaluator* LBPEvaluator::create()
 	{
 		return (new LBPEvaluator);
 	}
@@ -580,7 +580,7 @@ namespace cv
 		vector<int>& rejectLevels,
 		vector<double>& levelWeights,
 		double scaleFactor, int minNeighbors,
-		int flags, Size minObjectSize, Size maxObjectSize,
+		Size minObjectSize, Size maxObjectSize,
 		bool outputRejectLevels )
 	{
 		const double GROUP_EPS = 0.2;
@@ -655,14 +655,24 @@ namespace cv
 		}
 	}
 
-	void LBPCascadeClassifier::detectMultiScale( const Mat& image, vector<Rect>& objects,
-		double scaleFactor, int minNeighbors,
-		int flags, Size minObjectSize, Size maxObjectSize)
+	void LBPCascadeClassifier::detectMultiScale(const Mat& image, 
+						    vector<Rect>& objects,
+						    double scaleFactor,
+						    int minNeighbors,
+						    Size minObjectSize,
+						    Size maxObjectSize)
 	{
 		vector<int> fakeLevels;
 		vector<double> fakeWeights;
-		detectMultiScale( image, objects, fakeLevels, fakeWeights, scaleFactor,
-			minNeighbors, flags, minObjectSize, maxObjectSize, false );
+		detectMultiScale(image, 
+				objects, 
+				fakeLevels, 
+				fakeWeights, 
+				scaleFactor,
+				minNeighbors, 
+				minObjectSize, 
+				maxObjectSize, 
+				false );
 	}
 
 	bool LBPCascadeClassifier::Data::read(const FileNode &root)
@@ -776,7 +786,7 @@ namespace cv
 			return false;
 
 		// load features
-		featureEvaluator = LBPEvaluator::create(data.featureType);
+		featureEvaluator = LBPEvaluator::create();
 		FileNode fn = root[CC_FEATURES];
 		if( fn.empty() )
 			return false;

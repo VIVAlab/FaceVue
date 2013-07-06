@@ -43,8 +43,10 @@ void ProcessThread::AddImage(const Mat &image,const string &str)
 
 //Delete image from database
 void ProcessThread::DeleteImage2(vector<string> name)
-{
-    face_obj->remove_from_Database(name);
+{    
+	mutex.lock();
+	face_obj->remove_from_Database(name);
+	mutex.unlock();
 }
 
 //Destructor

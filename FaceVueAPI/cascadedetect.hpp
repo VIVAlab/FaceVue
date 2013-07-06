@@ -86,7 +86,7 @@ public:
     int calcCat(int featureIdx) const
     { return (*this)(featureIdx); }
 
-        static LBPEvaluator* create( int featureType );
+        static LBPEvaluator* create();
 	vector<Feature>* features;
 	Feature* featuresPtr; // optimization
 private:
@@ -135,98 +135,98 @@ inline void LBPEvaluator::Feature :: updatePtrs( const Mat& sum )
 //----------------------------------------------  predictor functions -------------------------------------
 class LBPCascadeClassifier
 {
-public:
-    LBPCascadeClassifier();
-    LBPCascadeClassifier( const string& filename );
-    ~LBPCascadeClassifier();
-	
-	bool empty() const;
-    bool load( const string& filename );
-    bool read( const FileNode& node );
-    void detectMultiScale( const Mat& image,
-                                   CV_OUT vector<Rect>& objects,
-                                   double scaleFactor=1.1,
-                                   int minNeighbors=3, int flags=0,
-                                   Size minSize=Size(),
-                                   Size maxSize=Size() );
+	public:
+		LBPCascadeClassifier();
+		LBPCascadeClassifier( const string& filename );
+		~LBPCascadeClassifier();
 
-    void detectMultiScale( const Mat& image,
-                                   CV_OUT vector<Rect>& objects,
-                                   vector<int>& rejectLevels,
-                                   vector<double>& levelWeights,
-                                   double scaleFactor=1.1,
-                                   int minNeighbors=3, int flags=0,
-                                   Size minSize=Size(),
-                                   Size maxSize=Size(),
-                                   bool outputRejectLevels=false );
+		bool empty() const;
+		bool load( const string& filename );
+		bool read( const FileNode& node );
+		void detectMultiScale(const Mat& image,
+				      CV_OUT vector<Rect>& objects,
+				      double scaleFactor=1.1,
+				      int minNeighbors=3, 
+				      Size minSize=Size(),
+				      Size maxSize=Size() );
+
+		void detectMultiScale( const Mat& image,
+				CV_OUT vector<Rect>& objects,
+				vector<int>& rejectLevels,
+				vector<double>& levelWeights,
+				double scaleFactor=1.1,
+				int minNeighbors=3,
+				Size minSize=Size(),
+				Size maxSize=Size(),
+				bool outputRejectLevels=false );
 
 
-    Size getOriginalWindowSize() const;
-    int getFeatureType() const;
-    bool setImage( const Mat& );
+		Size getOriginalWindowSize() const;
+		int getFeatureType() const;
+		bool setImage( const Mat& );
 
-private:
+	private:
 
-    bool detectSingleScale( const Mat& image, int stripCount, Size processingRectSize,
-                                    int stripSize, int yStep, double factor, vector<Rect>& candidates,
-                                    vector<int>& rejectLevels, vector<double>& levelWeights, bool outputRejectLevels=false);
+		bool detectSingleScale( const Mat& image, int stripCount, Size processingRectSize,
+				int stripSize, int yStep, double factor, vector<Rect>& candidates,
+				vector<int>& rejectLevels, vector<double>& levelWeights, bool outputRejectLevels=false);
 
-    enum { BOOST = 0 };
-    enum { DO_CANNY_PRUNING = 1, SCALE_IMAGE = 2,
-           FIND_BIGGEST_OBJECT = 4, DO_ROUGH_SEARCH = 8 };
+		enum { BOOST = 0 };
+		enum { DO_CANNY_PRUNING = 1, SCALE_IMAGE = 2,
+			FIND_BIGGEST_OBJECT = 4, DO_ROUGH_SEARCH = 8 };
 
-    friend struct LBPCascadeClassifierInvoker;
+		friend struct LBPCascadeClassifierInvoker;
 
-    template<class FEval>
-    friend int predictCategorical( LBPCascadeClassifier& cascade, LBPEvaluator* featureEvaluator, double& weight);
+		template<class FEval>
+			friend int predictCategorical( LBPCascadeClassifier& cascade, LBPEvaluator* featureEvaluator, double& weight);
 
-    template<class FEval>
-    friend int predictCategoricalStump( LBPCascadeClassifier& cascade,  LBPEvaluator* featureEvaluator, double& weight);
+		template<class FEval>
+			friend int predictCategoricalStump( LBPCascadeClassifier& cascade,  LBPEvaluator* featureEvaluator, double& weight);
 
-    bool setImage( LBPEvaluator* feval, const Mat& image);
-    virtual int runAt( LBPEvaluator* feval, Point pt, double& weight );
+		bool setImage( LBPEvaluator* feval, const Mat& image);
+		virtual int runAt( LBPEvaluator* feval, Point pt, double& weight );
 
-    class Data
-    {
-    public:
-        struct DTreeNode
-        {
-            int featureIdx;
-            int left;
-            int right;
-			float threshold;
-        };
+		class Data
+		{
+			public:
+				struct DTreeNode
+				{
+					int featureIdx;
+					int left;
+					int right;
+					float threshold;
+				};
 
-        struct DTree
-        {
-            int nodeCount;
-        };
+				struct DTree
+				{
+					int nodeCount;
+				};
 
-        struct Stage
-        {
-            int first;
-            int ntrees;
-            float threshold;
-        };
+				struct Stage
+				{
+					int first;
+					int ntrees;
+					float threshold;
+				};
 
-        bool read(const FileNode &node);
+				bool read(const FileNode &node);
 
-        bool isStumpBased;
+				bool isStumpBased;
 
-        int stageType;
-        int featureType;
-        int ncategories;
-        Size origWinSize;
+				int stageType;
+				int featureType;
+				int ncategories;
+				Size origWinSize;
 
-        vector<Stage> stages;
-        vector<DTree> classifiers;
-        vector<DTreeNode> nodes;
-        vector<float> leaves;
-        vector<int> subsets;
-    };
+				vector<Stage> stages;
+				vector<DTree> classifiers;
+				vector<DTreeNode> nodes;
+				vector<float> leaves;
+				vector<int> subsets;
+		};
 
-    Data data;
-    LBPEvaluator* featureEvaluator;
+		Data data;
+		LBPEvaluator* featureEvaluator;
 
 };
 

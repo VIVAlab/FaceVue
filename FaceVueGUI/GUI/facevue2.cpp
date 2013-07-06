@@ -149,7 +149,7 @@ void FaceVuee::OutImage(IplImage* image,Mat image_color_140)
 		cvCvtColor(image,img,CV_GRAY2RGB);
 		cvCvtColor(image,image_gray,CV_GRAY2RGB);
 		QImage image140 = QImage((uchar *)image_color_140.data, 
-				         image_color_140.cols,
+					 image_color_140.cols,
 					 image_color_140.rows,
 					 image_color_140.step, 
 					 QImage::Format_RGB888);
@@ -160,40 +160,34 @@ void FaceVuee::OutImage(IplImage* image,Mat image_color_140)
 		cvReleaseImage(&img);
 		image_color_140.release();
 		isImage_filled=true;
-
-		ProcessThread::mutex.lock();
-		process->takePicture = false;
-		process->key_flag=true;
 	}
 }
 
 void FaceVuee::DeleteImage()
 {
-//    QList <QTableWidgetItem *> items = ui.tableWidget->selectedItems();
-    int value=ui.tableWidget->rowCount();
+	//QList <QTableWidgetItem *> items = ui.tableWidget->selectedItems();
+	int value=ui.tableWidget->rowCount();
 
-    for (int x=value-1;x>=0;x--)
-    {
-        if(ui.tableWidget->item(x,0)->isSelected())
-        {
-            remove((ui.tableWidget->item(x,0)->whatsThis()+QString("_gry.jpg")).toStdString().c_str());
-            remove((ui.tableWidget->item(x,0)->whatsThis()+QString("_rgb.jpg")).toStdString().c_str());
+	for (int x=value-1;x>=0;x--)
+	{
+		if(ui.tableWidget->item(x,0)->isSelected())
+		{
+			remove((ui.tableWidget->item(x,0)->whatsThis()+QString("_gry.jpg")).toStdString().c_str());
+			remove((ui.tableWidget->item(x,0)->whatsThis()+QString("_rgb.jpg")).toStdString().c_str());
 
-            ui.tableWidget->removeRow(x);
-        }
-    }
-    vector<string> images = FindImages(FACE_DIR);
-    ProcessThread::mutex.lock();
-    process->DeleteImage2(images);
-    ProcessThread::mutex.unlock();
+			ui.tableWidget->removeRow(x);
+		}
+	}
+	vector<string> images = FindImages(FACE_DIR);
+	process->DeleteImage2(images);
 
-    //code:
-//    QFile::remove(QString(FACE_DIR)+ui.imageslistLST->currentItem()->text()+QString(".jpg"));
-//    ProcessThread::mutex.lock();
-//    process->DeleteImage(ui.imageslistLST->currentRow());
-//    ProcessThread::mutex.unlock();
-//    delete ui.imageslistLST->currentItem();
-//    ui.imagePreviewLBL->setPixmap(0);
+	//code:
+	//    QFile::remove(QString(FACE_DIR)+ui.imageslistLST->currentItem()->text()+QString(".jpg"));
+	//    ProcessThread::mutex.lock();
+	//    process->DeleteImage(ui.imageslistLST->currentRow());
+	//    ProcessThread::mutex.unlock();
+	//    delete ui.imageslistLST->currentItem();
+	//    ui.imagePreviewLBL->setPixmap(0);
 }
 void FaceVuee::SaveImage(string str,IplImage* img,Mat &img_rgb)
 {
@@ -268,21 +262,18 @@ vector<string> FaceVuee::FindImages(string in)
 
 void FaceVuee::ChangeMode(int a)
 {
-    if (a == 0)
-    {
-	QImage image2(":/FaceVue/Resources/unknown.jpg");
-        ui.Lbl_faceR->setPixmap(QPixmap::fromImage(image2));
-
-        ProcessThread::mutex.lock();
-        process->mode = Registration;
-        ProcessThread::mutex.unlock();
-    }
-    else if(a ==1)
-    {
-        ProcessThread::mutex.lock();
-        process->mode = Recognition;
-        ProcessThread::mutex.unlock();
-    }
+	switch (a)
+	{
+		case 0:
+			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(QImage(":/FaceVue/Resources/unknown.jpg")));
+			process->setProcessingMode (this, REGISTRATION_MODE);
+			break;
+		case 1:
+			process->setProcessingMode (this, RECOGNITION_MODE);
+			break;
+		default:
+			qDebug() << "Unexpected mode";
+	}
 }
 
 void FaceVuee::Logging(char* label,unsigned long frame)
@@ -353,14 +344,14 @@ void FaceVuee::keyPressEvent(QKeyEvent *event)
 }
 
 void
-FaceVue::keyReleaseEvent (QKeyEvent *event)
+FaceVuee::keyReleaseEvent (QKeyEvent *event)
 {	if (event->key()==Qt::Key_Return)
 		keyPressed = false;
 	QMainWindow::keyReleaseEvent (event);
 }
 
 bool
-FaceVue::isReturnPressed ()
+FaceVuee::isReturnKeyPressed ()
 {
 	return keyPressed;
 }
