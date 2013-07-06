@@ -29,7 +29,8 @@ class FaceVuee : public QMainWindow
 	protected:
 		void keyPressEvent(QKeyEvent *);
 		void keyReleaseEvent(QKeyEvent *);
-		private:
+
+	private:
 		Ui::FaceVueClass ui;
 		ProcessThread* process;
 		vector<string> FindImages(string in);
@@ -42,6 +43,7 @@ class FaceVuee : public QMainWindow
 		IplImage* image_gray;
 		Mat image_color;
 		bool keyPressed;
+		const char* getFaceDir();
 
 	private slots:
 		void ChangeMode(int);

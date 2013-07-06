@@ -7,16 +7,47 @@
 #include <QDebug>
 #include <QLabel>
 #include <stdio.h>
+#include <sstream>
+#include <iostream>
+#include <string>
 
 // TODO: for windows there are better alternatives 
 // (the installation directory can be registered using QSetting and retreived)
 // This can be investigated
 // The current solution assumes the application is always executed from the
 // working directory. (this is a strong assumption)
+//
 #if defined(Q_OS_UNIX)
-	#define FACE_DIR "~/.facevue/face/"
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+const char*
+FaceVuee::getFaceDir ()
+{
+	static string *face_dir = NULL;
+	if (!face_dir)
+	{
+		face_dir = new string;
+		stringstream ss;
+		struct passwd *pw = getpwuid (getuid());
+		ss << pw->pw_dir << "/.facevue/face/";
+		*face_dir = ss.str();
+	}
+
+	return face_dir->c_str(); 
+}
 #elif defined(Q_OS_WIN32)
-	#define FACE_DIR "./face/"
+const char*
+FaceVuee::getFaceDir ()
+{
+	static string *face_dir = NULL;
+	if (!face_dir)
+	{
+		face_dir = new string;
+		*face_dir = "face";
+	}
+	return face_dir->c_str();
+}
 #endif
 
 FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
@@ -25,7 +56,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	keyPressed = false;
 	flag=true;
 	ui.setupUi(this);
-	vector<string> images = FindImages(FACE_DIR);
+	vector<string> images = FindImages(getFaceDir());
 
 	//    ui.imageslistLST->setSelectionBehavior(QAbstractItemView::SelectRows);
 	//    for(int i = 0;i<images.size();i++)
@@ -127,25 +158,25 @@ void FaceVuee::Beep()
 }
 void FaceVuee::addImg_to_database()
 {
-    if(isImage_filled)
-    {
-        QString str;
-        str = ui.lineEdit->text();
-        SaveImage(str.toStdString(),image_gray,image_color);
+	if(isImage_filled)
+	{
+		QString str;
+		str = ui.lineEdit->text();
+		SaveImage(str.toStdString(),image_gray,image_color);
 
-        cvReleaseImage(&image_gray);
-        image_color.release();
-        ui.lineEdit->clear();
-        isImage_filled=false;
+		cvReleaseImage(&image_gray);
+		image_color.release();
+		ui.lineEdit->clear();
+		isImage_filled = false;
 
-	QImage img (":/FaceVue/Resources/unknown.jpg");
-        ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-        ui.lineEdit->setText("New face added");
-    }
-    else
-    {
-        ui.lineEdit->setText("No face detected");
-    }
+		QImage img (":/FaceVue/Resources/unknown.jpg");
+		ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
+		ui.lineEdit->setText("New face added");
+	}
+	else
+	{
+		ui.lineEdit->setText("No face detected");
+	}
 }
 
 void FaceVuee::OutImage(IplImage* image,Mat image_color_140)
@@ -189,7 +220,7 @@ void FaceVuee::DeleteImage()
 			ui.tableWidget->removeRow(x);
 		}
 	}
-	vector<string> images = FindImages(FACE_DIR);
+	vector<string> images = FindImages(getFaceDir());
 	process->DeleteImage2(images);
 
 	//code:
@@ -200,75 +231,70 @@ void FaceVuee::DeleteImage()
 	//    delete ui.imageslistLST->currentItem();
 	//    ui.imagePreviewLBL->setPixmap(0);
 }
-void FaceVuee::SaveImage(string str,IplImage* img,Mat &img_rgb)
+
+//TODO: this function needs a major cleanup
+void 
+FaceVuee::SaveImage(string str, IplImage* img, Mat &img_rgb)
 {
-//    vector<FaceSample>* faces = process->returnFaces();
-    vector<FaceSample> faces = process->face_obj->recognition->Face_database;
-    int number = 0;
-    for (int a = faces.size() -1 ; a>-1 ; a--)
-    {
-        string tmplbl = faces[a].label_s;
-        string pname = tmplbl.substr(0,tmplbl.length()-6);
-        if (str.compare(pname)==0)
-        {
-            number = atoi(tmplbl.substr(tmplbl.length()-6,2).c_str())+1;
-            break;
-        }
-    }
-    char address[100];
-    char address_rgb[100];
-    if(number<10)
-    {
-        sprintf(address,FACE_DIR"%s0%d_gry.jpg",str.c_str(),number);
-        sprintf(address_rgb,FACE_DIR"%s0%d_rgb.jpg",str.c_str(),number);
-//        ui.imageslistLST->insertItem(faces->size(),QString(str.c_str())+QString("0")+QString::number(number));
-    }
-    else
-    {
-        sprintf(address,FACE_DIR"%s%d_gry.jpg",str.c_str(),number);
-        sprintf(address_rgb,FACE_DIR"%s%d_rgb.jpg",str.c_str(),number);
-//        ui.imageslistLST->insertItem(faces->size(),QString(str.c_str())+QString(number));
-    }
-    cvSaveImage(address,img);
-    imwrite(address_rgb,img_rgb);
+	vector<FaceSample> faces = process->face_obj->recognition->Face_database;
+	int number = 0;
+	for (int a = faces.size() -1 ; a>-1 ; a--)
+	{
+		string tmplbl = faces[a].label_s;
+		string pname = tmplbl.substr(0,tmplbl.length()-6);
+		if (str.compare(pname)==0)
+		{
+			number = atoi(tmplbl.substr(tmplbl.length()-6,2).c_str())+1;
+			break;
+		}
+	}
+	stringstream address;
+	stringstream address_rgb;
+	const char *prefix = (number < 10) ? "0" : "";
+	address << getFaceDir() << str << prefix << number << "_gry.jpg";
+	address_rgb << getFaceDir() << str << prefix << number << "_rgb.jpg";
 
-    string add(address);
-    process->AddImage(Mat(img),address);
-    QTableWidgetItem *tWidget=new QTableWidgetItem();
-    tWidget->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-    int N=ui.tableWidget->rowCount();
-    ui.tableWidget->insertRow(N);
+	imwrite(address.str(), Mat(img)); 	//save the gray-scale image
+	imwrite(address_rgb.str(), img_rgb);  //save the color image
 
-    Mat img_cv;
-    QString str1=QString((add.substr(0,add.length()-8)+"_rgb.jpg").c_str());
-    img_cv=imread(str1.toStdString(),1);
-    cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-    QImage sidebar_project_icon_Image((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
-    QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
-    tWidget->setText(QString(add.substr(add.find_last_of("//")+1,add.length() - add.find_last_of("//") - 11).c_str()));
-    tWidget->setWhatsThis(QString(add.substr(add.find_last_of("//")+1,add.length() - add.find_last_of("//") - 9).c_str()));
-    tWidget->setIcon(sidebar_project_icon_Icon);
+	process->AddImage(Mat(img),address.str());
+	QTableWidgetItem *tWidget=new QTableWidgetItem();
+	tWidget->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+	int N=ui.tableWidget->rowCount();
+	ui.tableWidget->insertRow(N);
 
-    ui.tableWidget->setItem(N,0,tWidget);
-
-
+	Mat img_cv;
+	img_cv = imread(address_rgb.str());
+	cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
+	QImage sidebar_project_icon_Image ((uchar*)img_cv.data,
+					  img_cv.cols,
+					  img_cv.rows,
+					  img_cv.step,
+					  QImage::Format_RGB888);
+	QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
+	tWidget->setText(QString(address.str().substr(address.str().find_last_of("//")+1,
+				 address.str().length() - address.str().find_last_of("//") - 11).c_str()));
+	tWidget->setWhatsThis(QString(address.str().substr(address.str().find_last_of("//")+1,
+				      address.str().length() - address.str().find_last_of("//") - 9).c_str()));
+	tWidget->setIcon(sidebar_project_icon_Icon);
+	ui.tableWidget->setItem(N,0,tWidget);
 }
 
 vector<string> FaceVuee::FindImages(string in)
 {
-    vector<string> out;
-    QDir dir(QString(in.c_str()));
-    dir.setFilter(QDir::Files);
-    dir.setSorting(QDir::Name);
-    QFileInfoList list = dir.entryInfoList();
-    for (int i = 0; i < list.size(); ++i) {
-        QFileInfo fileInfo = list.at(i);
-        string tmp = in + fileInfo.fileName().toStdString();
-        if(tmp.substr(tmp.length()-8,8).compare("_gry.jpg")==0){
-            out.push_back(tmp);
-        }
-    }
-    return out;
+	vector<string> out;
+	QDir dir(QString(in.c_str()));
+	dir.setFilter(QDir::Files);
+	dir.setSorting(QDir::Name);
+	QFileInfoList list = dir.entryInfoList();
+	for (int i = 0; i < list.size(); ++i) {
+		QFileInfo fileInfo = list.at(i);
+		string tmp = in + fileInfo.fileName().toStdString();
+		if(tmp.substr(tmp.length()-8,8).compare("_gry.jpg")==0){
+			out.push_back(tmp);
+		}
+	}
+	return out;
 }
 
 void FaceVuee::ChangeMode(int a)
@@ -335,11 +361,11 @@ void FaceVuee::Logging(char* label,unsigned long frame)
 
 			ui.FaceD->setPalette(*green_Palette);
 			ui.FaceR->setPalette(*green_Palette);
-			//                ui.loggingNameLBL->setText(QString(label));
+
 			string label_(label);
 			ui.Lbl_nameR->setText(QString((label_.substr(0,label_.length()-6)).c_str()));
 			Mat img_cv;
-			QString str=(FACE_DIR+QString((label_.substr(0,label_.length()-4)+"_rgb").c_str())+".jpg");
+			QString str=(getFaceDir() + QString((label_.substr(0,label_.length()-4)+"_rgb").c_str())+".jpg");
 			img_cv=imread(str.toStdString(),1);
 			cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
 			QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
@@ -373,6 +399,9 @@ FaceVuee::isReturnKeyPressed ()
 }
 
 
+/**
+ * TODO: get rid of cond, mutex by using the VideoCapturer framework
+ **/
 void 
 FaceVuee::drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label)
 {

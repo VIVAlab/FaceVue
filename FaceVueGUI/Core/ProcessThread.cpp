@@ -95,34 +95,28 @@ IplImage* ProcessThread::addImage(IplImage* image, CvRect rect)
 	Mat image_color_140;
 	IplImage* warp_dst = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
 	face_obj->align_Face(image,rect, warp_dst);
-	IplImage* out = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
+	IplImage* out = NULL;
 	//colored image
-	bool captured=false;
 
 	if(face_obj->is_aligned){
-		captured = true;
+		out = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
 		cvCopyImage(warp_dst,out);
 		int val_x=abs(face_obj->target_Face->right_eye_x-face_obj->target_Face->left_eye_x);
 		int val_y=abs(face_obj->target_Face->mouth_y -face_obj->target_Face->left_eye_y);
 		CvRect rect2 = cvRect(abs(face_obj->target_Face->right_eye_x-2*val_x),
-				abs(face_obj->target_Face->right_eye_y-2*val_y),
-				rect.width*1.1f,
-				rect.height*1.1f);
+					  abs(face_obj->target_Face->right_eye_y-2*val_y),
+					  rect.width*1.1f,
+					  rect.height*1.1f);
 		cvSetImageROI(image, rect2);
 		IplImage *destination = cvCreateImage( cvSize(140,140),image->depth, image->nChannels );
 		cvResize(image, destination);
-		Mat temp(destination);
-		image_color_140=temp.clone();
+		image_color_140 = Mat(destination).clone();
 		cvReleaseImage(&destination);
+		emit OutImage (out, image_color_140);
 	}
 
-	if(!captured)
-		cvReleaseImage(&out);
-
 	cvReleaseImage(&warp_dst);
-	emit OutImage (out, image_color_140);
 	return out;
-
 }
 
 
