@@ -97,7 +97,6 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	qRegisterMetaType< Mat >("Mat");
 
 	connect(process,SIGNAL(OutImage(IplImage*,Mat)),this,SLOT(OutImage(IplImage*,Mat)));
-	connect(process,SIGNAL(FaceInElipse()),this,SLOT(FaceInElipse()));
 
 	connect(process,SIGNAL(Beep()),this,SLOT(Beep()));
 	process->start();
@@ -114,12 +113,6 @@ FaceVuee::~FaceVuee()
 void FaceVuee::Beep()
 {
     QApplication::beep();
-}
-void FaceVuee::FaceInElipse()
-{
-    ProcessThread::mutex.lock();
-    process->takePicture = true;
-    ProcessThread::mutex.unlock();
 }
 void FaceVuee::addImg_to_database()
 {
