@@ -39,8 +39,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	ui.tableWidget->insertColumn(0);
 	ui.tableWidget->setAutoScroll(true);
 
-
-	for(unsigned int i = 0;i<images.size();i++)
+	for(unsigned int i=0; i<images.size(); i++)
 	{
 
 		tWidget=new QTableWidgetItem();
@@ -52,15 +51,15 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 		img_cv=imread(str.toStdString(),1);
 		cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
 		QImage sidebar_project_icon_Image((uchar*)img_cv.data, 
-				                  img_cv.cols, 
-						  img_cv.rows,
-						  img_cv.step, 
-						  QImage::Format_RGB888);
+				img_cv.cols, 
+				img_cv.rows,
+				img_cv.step, 
+				QImage::Format_RGB888);
 		QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
 		tWidget->setText(QString(images[i].substr(images[i].find_last_of("\\")+1,
-					 images[i].length() - images[i].find_last_of("\\") - 11).c_str()));
+						images[i].length() - images[i].find_last_of("\\") - 11).c_str()));
 		tWidget->setWhatsThis(QString(images[i].substr(images[i].find_last_of("//")+1,
-					      images[i].length() - images[i].find_last_of("//") - 9).c_str()));
+						images[i].length() - images[i].find_last_of("//") - 9).c_str()));
 		tWidget->setIcon(sidebar_project_icon_Icon);
 
 		ui.tableWidget->setItem(i,0,tWidget);
@@ -91,8 +90,14 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 
 	process = new ProcessThread(this, images);
 
-	connect(process,SIGNAL(DrawImage(FaceVue::FaceContent*)),this,SLOT(DrawImage(FaceVue::FaceContent*)));
+
+	//connect(process,SIGNAL(DrawImage(FaceVue::FaceContent*)),this,SLOT(DrawImage(FaceVue::FaceContent*)));
 	connect(process,SIGNAL(Logging( char *,unsigned long)),this,SLOT(Logging(char *,unsigned long)));
+	connect(process,
+	  	SIGNAL(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
+		this,
+		SLOT(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
+		Qt::QueuedConnection);
 
 	qRegisterMetaType< Mat >("Mat");
 
@@ -266,6 +271,11 @@ void FaceVuee::ChangeMode(int a)
 	{
 		case 0:
 			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(QImage(":/FaceVue/Resources/unknown.jpg")));
+			ui.deleteBTN->setVisible(true);
+			ui.lineEdit->setVisible(true);
+			ui.add_BTN->setVisible(true);
+			ui.label_name->setVisible(true);
+			ui.Lbl_nameR->setVisible(false);
 			process->setProcessingMode (this, REGISTRATION_MODE);
 			break;
 		case 1:
@@ -355,3 +365,13 @@ FaceVuee::isReturnKeyPressed ()
 {
 	return keyPressed;
 }
+
+
+void 
+FaceVuee::drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label)
+{
+	mutex->lock();
+	label->setPixmap (QPixmap::fromImage (*img));
+	cond->wakeAll();
+}
+

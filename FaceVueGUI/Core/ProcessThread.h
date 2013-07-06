@@ -13,6 +13,8 @@
 #include "RegistrationMode.h"
 #include "RecognitionMode.h"
 #include <QMutex>
+#include <QLabel>
+#include <QWaitCondition>
 
 using namespace cv;
 using namespace std;
@@ -65,6 +67,7 @@ class ProcessThread : public  QThread
 		void Logging(char*,unsigned long);
 		void OutImage(IplImage*,Mat);
 		void Beep();
+		void drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*);
 };
 
 #endif 

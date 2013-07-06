@@ -1,4 +1,5 @@
 #include "RecognitionMode.h"
+#include <GUI/facevue2.h>
 
 RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 	:ProcessingMode (gui, facevue)
@@ -6,10 +7,10 @@ RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 }
 
 /* recognize a face in the image and then draw it */
-void 
+QImage*
 RecognitionMode::process (IplImage *img)
 {
-	printf ("recognition-mode processing\n");
+	return new QImage;
 	/*
 	//recognize
 	CvRect rect=face_obj->detect_FaceROI(image);
@@ -65,5 +66,9 @@ RecognitionMode::process (IplImage *img)
 	*/
 }
 
-
+QLabel*
+RecognitionMode::getProperLabel()
+{
+	return gui->ui.recognitionDisplayLBL;
+}
 

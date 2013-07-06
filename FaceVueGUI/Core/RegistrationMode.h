@@ -7,7 +7,8 @@ class RegistrationMode : public ProcessingMode
 {
 public:
 	RegistrationMode(FaceVuee *gui, FaceVue *facevue);
-	virtual void process (IplImage *img);
+	virtual QImage* process (IplImage *img);
+	virtual QLabel* getProperLabel();
 
 };
 

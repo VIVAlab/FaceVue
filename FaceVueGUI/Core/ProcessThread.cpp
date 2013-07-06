@@ -10,8 +10,8 @@
 ProcessThread::ProcessThread(FaceVuee *gui, vector<string> imagess)
 {
 	frame_cnt = 0;
-	setProcessingMode (gui, REGISTRATION_MODE);
         face_obj=new FaceVue();
+	mode = new RegistrationMode (gui, face_obj);
 #if defined(Q_OS_WIN32)
         face_obj->load_Detection_Model("Models//lbpcascade_frontalface.xml");
         face_obj->load_Landmark_Model("Models//flandmark_model.dat");
@@ -72,10 +72,20 @@ void ProcessThread::run()
 		frame_cnt++;
 		cap >> tmpImage;
 		resize(tmpImage,image,Size(800,600));
+
 		mutex.lock();
 		IplImage *img = &(IplImage)image;
-		mode->process(img);
+		QImage *qimg = mode->process(img);
+		QLabel *label = mode->getProperLabel();
 		mutex.unlock();
+
+		QWaitCondition cond;
+		QMutex drawMutex;
+		drawMutex.lock();
+		emit drawImage (qimg, &cond, &drawMutex, label);
+		cond.wait (&drawMutex);
+		delete qimg;
+		drawMutex.unlock();
 	}
 };
 
