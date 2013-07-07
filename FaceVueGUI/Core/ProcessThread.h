@@ -57,10 +57,13 @@ class ProcessThread : public  QThread
 		FaceVue *face_obj;
 		void setProcessingMode (FaceVuee *gui, Mode mode);
 
+		//setName
+		void setName (const string &name);
+
 	private:
 		QMutex mutex; //used to sync the processing mode
 		ProcessingMode *mode;
-		char* name;
+		string name;
 		unsigned int frame_cnt;
 
 	signals:

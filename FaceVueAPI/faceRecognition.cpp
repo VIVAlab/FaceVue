@@ -284,7 +284,7 @@ string FaceRecog::Predictor( Mat test){
     if(N[t]>=globalThreshold)
         l=Face_database[t].label_s.substr(0,Face_database[t].label_s.length());//-2);
     else
-        l="unknown";
+        l = "Unknown";
     return l;
 }
 
@@ -295,7 +295,7 @@ string FaceRecog::Detector(Mat test_data){
         HistCreator(test_data,test_data_H);
         l=Predictor(test_data_H);
     }else
-        l="unknown";
+        l = "Unknown";
 
     return l;
 }

@@ -6,6 +6,12 @@
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
 
+void
+ProcessThread::setName (const string &name)
+{
+	this->name = name;
+}
+
 //Process thread Constructor. We Load all the models and images to the database here.
 ProcessThread::ProcessThread(FaceVuee *gui, vector<string> imagess)
 {
@@ -31,7 +37,6 @@ ProcessThread::ProcessThread(FaceVuee *gui, vector<string> imagess)
 
 
         isStopped = false;
-        name = new char[100];
 }
 
 //Add image to database and compute the descriptor for that
@@ -53,7 +58,6 @@ void ProcessThread::DeleteImage2(vector<string> name)
 ProcessThread::~ProcessThread(void)
 {
         image.release();
-        delete[] name;
 }
 
 //"Run" part of the process thread.

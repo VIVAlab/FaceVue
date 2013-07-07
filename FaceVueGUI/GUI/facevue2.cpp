@@ -311,6 +311,11 @@ void FaceVuee::ChangeMode(int a)
 			process->setProcessingMode (this, REGISTRATION_MODE);
 			break;
 		case 1:
+			ui.deleteBTN->setVisible(false);
+			ui.lineEdit->setVisible(false);
+			ui.add_BTN->setVisible(false);
+			ui.label_name->setVisible(false);
+			ui.Lbl_nameR->setVisible(true);
 			process->setProcessingMode (this, RECOGNITION_MODE);
 			break;
 		default:
