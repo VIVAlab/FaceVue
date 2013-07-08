@@ -12,33 +12,27 @@ FaceVue::FaceVue(): detection_threshold(130.f)
 }
 
 //Create Database
-bool 
-FaceVue::create_Database(vector<string> &filename)
+//TODO: Dispose this function
+void
+FaceVue::create_Database()
 {
-    recognition->Face_database.clear();
+	recognition->Face_database.clear();
 
-    if (!(recognition->LoadImages(filename)))
-    {
-	    cout << "At least one file is missing: " << filename[0] << endl;
-	    return false;
-    }
-    else
-    {
-	    Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
-	    recognition->ExtractKeypoints(temp, 4, 3 );
+	Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
+	recognition->ExtractKeypoints(temp, 4, 3 );
 
-	    recognition->ReadClusters();
-	    recognition->his_len=0;
-	    for (unsigned int i=0;i<recognition->centers.size();i++)
-		    recognition->his_len+=recognition->centers[i].rows;
+	recognition->ReadClusters();
+	recognition->his_len=0;
+	for (unsigned int i=0;i<recognition->centers.size();i++)
+		recognition->his_len+=recognition->centers[i].rows;
 
-	    for (unsigned int i=0; i< recognition->Face_database.size(); i++)
-		    recognition->HistCreator(recognition->Face_database[i].image, recognition->Face_database[i].train_data_H);
-	    return true;
-    }
+	for (unsigned int i=0; i< recognition->Face_database.size(); i++)
+		recognition->HistCreator(recognition->Face_database[i].image, 
+				recognition->Face_database[i].train_data_H);
 }
 
 //Add image to Database
+//TODO: review this function ! ... .jpg 
 void FaceVue::add_to_Database(Mat image, string name)
 {
     FaceSample face2;
@@ -61,13 +55,8 @@ void FaceVue::add_to_Database(Mat image, string name)
 }
 
 //remove image from Databases
-void FaceVue::remove_from_Database(const string &name)
-{
-    recognition->DeleteFace(name);
-}
-
-//remove image from Databases
-void FaceVue::remove_from_Database(const vector<string> &name)
+void 
+FaceVue::remove_from_Database(const QString &name)
 {
     recognition->DeleteFace(name);
 }

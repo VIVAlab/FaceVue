@@ -2,6 +2,7 @@
 #define FACEVUE_H
 
 #include <fstream>
+#include <QString>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
@@ -58,14 +59,13 @@ public:
     double detection_threshold;
 
     //Create Database
-    bool create_Database(vector<string> &filename);
+    void create_Database();
 
     //Add image to Database
     void add_to_Database(Mat image, string name);
 
     //remove image from Database
-    void remove_from_Database(const string &name);
-    void remove_from_Database(const vector<string> &name);
+    void remove_from_Database(const QString &name);
 
     //clear database
     void clear_Database();

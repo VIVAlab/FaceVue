@@ -65,7 +65,6 @@ public:
 
     //remove image from Database
     void remove_from_Database(const string &name);
-    void remove_from_Database(const vector<string> &name);
 
     //clear database
     void clear_Database();

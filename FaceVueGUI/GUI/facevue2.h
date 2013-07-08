@@ -33,7 +33,7 @@ class FaceVuee : public QMainWindow
 	private:
 		Ui::FaceVueClass ui;
 		ProcessThread* process;
-		vector<string> FindImages(string in);
+		QVector<QString> FindImages(string in);
 		void SaveImage(string str,IplImage* img,Mat &img_rgb);
 		QPalette *red_Palette;
 		QPalette *green_Palette;

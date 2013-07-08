@@ -12,11 +12,11 @@ ProcessThread::setName (const string &name)
 	this->name = name;
 }
 
-//Process thread Constructor. We Load all the models and images to the database here.
-ProcessThread::ProcessThread(FaceVuee *gui, vector<string> imagess)
+//Process thread Constructor. 
+ProcessThread::ProcessThread(FaceVuee *gui)
 {
 	frame_cnt = 0;
-        face_obj=new FaceVue();
+        face_obj = new FaceVue();
 	mode = new RegistrationMode (gui, face_obj);
 #if defined(Q_OS_WIN32)
         face_obj->load_Detection_Model("Models//lbpcascade_frontalface.xml");
@@ -33,7 +33,7 @@ ProcessThread::ProcessThread(FaceVuee *gui, vector<string> imagess)
 #endif         
 
         face_obj->init_Recognition_Module(face_obj->description_Model,face_obj->recognition_Model);
-        face_obj->create_Database(imagess);
+	face_obj->create_Database();
 
         isStopped = false;
 }
@@ -47,7 +47,7 @@ void ProcessThread::AddImage(const Mat &image,const string &str)
 
 
 //Delete image from database
-void ProcessThread::DeleteImage2(vector<string> name)
+void ProcessThread::DeleteImage(QString name)
 {    
 	mutex.lock();
 	face_obj->remove_from_Database(name);

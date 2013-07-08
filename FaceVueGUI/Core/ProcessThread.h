@@ -32,7 +32,7 @@ class ProcessThread : public  QThread
 	public:
 
 		//Process thread Constructor. We Load all the models and images to the database here.
-		ProcessThread(FaceVuee* gui, vector<string>);
+		ProcessThread(FaceVuee* gui);
 
 		//Destructor
 		~ProcessThread(void);
@@ -53,8 +53,11 @@ class ProcessThread : public  QThread
 		void AddImage(const Mat& image,const string& str);
 
 		//Delete image from database
-		void DeleteImage2(vector<string> name);
+		void DeleteImage(QString name);
 		FaceVue *face_obj;
+
+
+		//change the processing mode
 		void setProcessingMode (FaceVuee *gui, Mode mode);
 
 		//setName

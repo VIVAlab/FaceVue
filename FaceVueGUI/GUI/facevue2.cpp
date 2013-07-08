@@ -11,6 +11,10 @@
 #include <iostream>
 #include <string>
 
+#define GRAY_SCALE_POSTFIX   "_gry.jpg"
+#define COLOR_POSTFIX	     "_rgb.jpg"
+
+
 // TODO: for windows there are better alternatives 
 // (the installation directory can be registered using QSetting and retreived)
 // This can be investigated
@@ -57,13 +61,14 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	keyPressed = false;
 	flag=true;
 	ui.setupUi(this);
-	vector<string> images = FindImages(getFaceDir());
 
 	isImage_filled=false;
-	QTableWidgetItem *tWidget;
 
 	ui.tableWidget->insertColumn(0);
 	ui.tableWidget->setAutoScroll(true);
+
+	//TODO: repalce FindImage with LoadAllImage ...
+	///QVector<QString> images = FindImages(getFaceDir());
 
 	/*
 	for(unsigned int i=0; i<images.size(); i++)
@@ -112,7 +117,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	connect(ui.deleteBTN,SIGNAL(clicked()),this,SLOT(DeleteImage()));
 	connect(ui.widgetTAB,SIGNAL(currentChanged(int)),this,SLOT(ChangeMode(int)));
 
-	process = new ProcessThread(this, images);
+	process = new ProcessThread(this);
 
 	connect(process, 
 		SIGNAL(ImageAdded(QString, Mat)), 
@@ -204,35 +209,27 @@ void FaceVuee::OutImage(IplImage* image,Mat image_color_140)
 
 void FaceVuee::DeleteImage()
 {
-	//QList <QTableWidgetItem *> items = ui.tableWidget->selectedItems();
 	int value=ui.tableWidget->rowCount();
 
 	for (int x=value-1;x>=0;x--)
 	{
 		if(ui.tableWidget->item(x,0)->isSelected())
 		{
-			remove((ui.tableWidget->item(x,0)->whatsThis()+QString("_gry.jpg")).toStdString().c_str());
-			remove((ui.tableWidget->item(x,0)->whatsThis()+QString("_rgb.jpg")).toStdString().c_str());
-
+			QString name;
+			name = ui.tableWidget->item(x,0)->whatsThis();
+			QString name_gry = name + QString (GRAY_SCALE_POSTFIX);
+			QString name_rgb = name + QString (COLOR_POSTFIX);
+			process->DeleteImage (name);
+			remove(name_gry.toStdString().c_str());
+			remove(name_rgb.toStdString().c_str());
 			ui.tableWidget->removeRow(x);
 		}
 	}
-	vector<string> images = FindImages(getFaceDir());
-	process->DeleteImage2(images);
-
-	//code:
-	//    QFile::remove(QString(FACE_DIR)+ui.imageslistLST->currentItem()->text()+QString(".jpg"));
-	//    ProcessThread::mutex.lock();
-	//    process->DeleteImage(ui.imageslistLST->currentRow());
-	//    ProcessThread::mutex.unlock();
-	//    delete ui.imageslistLST->currentItem();
-	//    ui.imagePreviewLBL->setPixmap(0);
 }
 
 void
 FaceVuee::InsertIntoTable (QString name, Mat image)
 {
-	qDebug() << ":inserting";
 	//TODO: why not use the Model/View framework in Qt ?
 	QTableWidgetItem *tWidget = new QTableWidgetItem();
 	tWidget->setFlags (Qt::ItemIsSelectable | Qt::ItemIsEnabled);
@@ -276,35 +273,44 @@ FaceVuee::SaveImage(string str, IplImage* img, Mat &img_rgb)
 		}
 	}
 
-	stringstream address;
+	stringstream address_gry;
 	stringstream address_rgb;
-	address << getFaceDir() << str  << "_gry.jpg";
-	address_rgb << getFaceDir() << str << "_rgb.jpg";
+	address_gry << getFaceDir() << str << GRAY_SCALE_POSTFIX << ".jpg";
+	address_rgb << getFaceDir() << str << COLOR_POSTFIX << ".jpg";
 
-	imwrite(address.str(), Mat(img));     //save the gray-scale image
-	imwrite(address_rgb.str(), img_rgb);  //save the color image
+	imwrite (address_gry.str(), Mat(img)); //save the gray-scale image
+	imwrite (address_rgb.str(), img_rgb);  //save the color image
 
 	process->AddImage (Mat(img), str);
 }
 
-vector<string> FaceVuee::FindImages(string in)
+QVector<QString> 
+FaceVuee::FindImages(string in)
 {
-	vector<string> out;
+	QVector<QString> retVal;
 	QDir dir(QString(in.c_str()));
 	dir.setFilter(QDir::Files);
 	dir.setSorting(QDir::Name);
 	QFileInfoList list = dir.entryInfoList();
-	for (int i = 0; i < list.size(); ++i) {
-		QFileInfo fileInfo = list.at(i);
-		string tmp = in + fileInfo.fileName().toStdString();
-		if(tmp.substr(tmp.length()-8,8).compare("_gry.jpg")==0){
-			out.push_back(tmp);
+
+	for (QFileInfoList::iterator iter = list.begin(); iter != list.end(); iter++) 
+	{
+		QString filename = (*iter).fileName();
+		QString gry = QString (GRAY_SCALE_POSTFIX);
+		if (filename.endsWith (gry))
+		{
+			QString image_name = filename.left (filename.length() - gry.size());
+			QString gry_filename = filename;
+			QString rgb_filename = image_name + QString (COLOR_POSTFIX);
+			if (list.contains (rgb_filename))
+				retVal.push_back (image_name);
 		}
 	}
-	return out;
+	return retVal;
 }
 
-void FaceVuee::ChangeMode(int a)
+void 
+FaceVuee::ChangeMode(int a)
 {
 	switch (a)
 	{
@@ -330,7 +336,8 @@ void FaceVuee::ChangeMode(int a)
 	}
 }
 
-void FaceVuee::Logging(char* label,unsigned long frame)
+void 
+FaceVuee::Logging(char* label,unsigned long frame)
 {    
 
 	if(!std::string(label).compare("Unknown"))
@@ -369,7 +376,7 @@ void FaceVuee::Logging(char* label,unsigned long frame)
 	{
 		//ui.deleteBTN->setDisabled(true);
 		if(frame-last_frame>5)
-		{
+		{//TODO: REDO this
 
 			ui.FaceD->setPalette(*green_Palette);
 			ui.FaceR->setPalette(*green_Palette);

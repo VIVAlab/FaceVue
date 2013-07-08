@@ -12,6 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include "faceRecognition.h"
+#include <QString>
 
 using namespace cv;
 using namespace std;
@@ -68,8 +69,7 @@ public:
     void AddNewFace(Mat img,Mat face_descriptor, string name);
 
     //Remove face from database
-    void DeleteFace(const string &name);
-    void DeleteFace(const vector<string> &name);
+    void DeleteFace(const QString &name);
 
     //Set the Description model parameteres
     void set_Description_Model(const descriptionModel &model);
@@ -84,12 +84,12 @@ public:
     void ExtractKeypoints(Mat& image, int x_step, int y_step);
 
     //Loading Images
-    bool LoadImages(vector<string> file_path);
+    bool LoadImages(QVector<QString> file_path);
 
     //Loading cluster files
     void ReadClusters();
 
-    void BoWInit(vector<string> name_file);
+    void BoWInit(QVector<QString> name_file);
 
     vector<Mat> centers;
     vector<int> key_labels;

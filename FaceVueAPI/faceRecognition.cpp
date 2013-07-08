@@ -9,16 +9,16 @@ FaceRecog::~FaceRecog()
     delete[] clusters;
 }
 
-void FaceRecog::BoWInit( vector<string> name_file)
+void FaceRecog::BoWInit(QVector<QString> name_file)
 {
     Face_database.clear();
     LoadImages(name_file);
     Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
     ExtractKeypoints(temp, 4, 3 );
     his_len=0;
-    for(int i=0;i<centers.size();i++)
+    for(unsigned int i=0;i<centers.size();i++)
         his_len+=centers[i].rows;
-    for ( int i=0; i< Face_database.size(); i++)
+    for (unsigned int i=0; i< Face_database.size(); i++)
         HistCreator(Face_database[i].image, Face_database[i].train_data_H);
 }
 
@@ -36,21 +36,17 @@ void FaceRecog::AddNewFace(Mat img,Mat face_descriptor, string name){
     Face_database.push_back(face2);
 }
 
-void FaceRecog::DeleteFace(const string &name)
+void FaceRecog::DeleteFace(const QString &name)
 {
 
-    vector<FaceSample>::iterator it = Face_database.begin();
-    int index=0;
-    for(int i=0;i<Face_database.size();i++)
-        if(Face_database[i].label_s.compare(name)==0)
-            index=i;
-    for (int i=0;i<index;i++)
-        it++;
-    Face_database.erase(it);
-}
-void FaceRecog::DeleteFace(const vector<string> &name)
-{
-    BoWInit(name);
+	vector<FaceSample>::iterator it = Face_database.begin();
+	unsigned int index=0;
+	for(unsigned int i=0;i<Face_database.size();i++)
+		if(Face_database[i].label_s.compare(name.toStdString())==0)
+			index=i;
+	for (unsigned int i=0;i<index;i++)
+		it++;
+	Face_database.erase(it);
 }
 
 void FaceRecog::set_Description_Model(const descriptionModel &model)
@@ -123,7 +119,7 @@ void FaceRecog::LBP(Mat img, Mat *H_data){
     LBPFilter(img,LBPed_img);
 
 
-    for (int i=0;i<keyps.size();i++){
+    for (unsigned int i=0; i<keyps.size();i++){
         start_p_x=keyps[i].x-window/2;
         start_p_y=keyps[i].y-window/2;
         Mat hist_=Mat::zeros(1,59,DataType<uchar>::type);
@@ -145,7 +141,7 @@ void FaceRecog::LBP(Mat img, Mat *H_data){
 int FaceRecog::MaxFinder(vector<uchar> data){
     uchar max=data[0];
     int max_num=0;
-    for(int i=0;i<data.size();i++){
+    for (unsigned int i=0; i<data.size(); i++){
         if(data[i]>max){
             max=data[i];
             max_num=i;
@@ -218,20 +214,20 @@ void FaceRecog::ExtractKeypoints(Mat& image, int x_step, int y_step)
 
 }
 
-bool FaceRecog::LoadImages(vector<string> file_path){
+bool FaceRecog::LoadImages(QVector<QString> file_path){
 
-    for(int i=0;i<file_path.size();i++){
-        FaceSample sample;
-        sample.file_address=file_path[i];
-        sample.label_s=file_path[i].substr(file_path[i].find_last_of("\\")+1,(file_path[i].find_last_of(".jpg")-file_path[i].find_last_of("\\")-4));
+	for(int i=0;i<file_path.size();i++){
+		FaceSample sample;
+		sample.file_address = file_path[i].toStdString();
+		sample.label_s = sample.file_address.substr(sample.file_address.find_last_of("\\")+1,(sample.file_address.find_last_of(".jpg")-sample.file_address.find_last_of("\\")-4));
 
-        sample.image= imread(file_path[i].c_str(),0);
-        if(sample.image.empty())
-            return false;
-        Face_database.push_back(sample);
+		sample.image= imread(sample.file_address.c_str(),0);
+		if(sample.image.empty())
+			return false;
+		Face_database.push_back(sample);
 
-    }
-    return true;
+	}
+	return true;
 }
 
 void FaceRecog::ReadClusters(){
@@ -272,7 +268,7 @@ int FaceRecog::CompareHistInterSect(Mat a, Mat b){
 string FaceRecog::Predictor( Mat test){
 
     vector<uchar> N;
-    for(int j=0;j<Face_database.size();j++){
+    for(unsigned int j=0;j<Face_database.size();j++){
 
         //N.push_back(compareHist(test,train[j], CV_COMP_INTERSECT));
         int p=CompareHist(test,Face_database[j].train_data_H);
