@@ -67,35 +67,6 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	ui.tableWidget->insertColumn(0);
 	ui.tableWidget->setAutoScroll(true);
 
-	//TODO: repalce FindImage with LoadAllImage ...
-	///QVector<QString> images = FindImages(getFaceDir());
-
-	/*
-	for(unsigned int i=0; i<images.size(); i++)
-	{
-		tWidget=new QTableWidgetItem();
-		tWidget->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-		ui.tableWidget->insertRow(i);
-
-		Mat img_cv;
-		QString str=QString((images[i].substr(0,images[i].length()-8)+"_rgb.jpg").c_str());
-		img_cv=imread(str.toStdString(),1);
-		cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-		QImage sidebar_project_icon_Image((uchar*)img_cv.data, 
-				img_cv.cols, 
-				img_cv.rows,
-				img_cv.step, 
-				QImage::Format_RGB888);
-		QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
-		tWidget->setText(QString(images[i].substr(images[i].find_last_of("\\")+1,
-						images[i].length() - images[i].find_last_of("\\") - 11).c_str()));
-		tWidget->setWhatsThis(QString(images[i].substr(images[i].find_last_of("//")+1,
-						images[i].length() - images[i].find_last_of("//") - 9).c_str()));
-		tWidget->setIcon(sidebar_project_icon_Icon);
-		ui.tableWidget->setItem(i,0,tWidget);
-	}   
-	*/
-
 	red_Palette = new QPalette();
 	red_Palette->setColor(QPalette::Window, Qt::red);
 
@@ -120,9 +91,9 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	process = new ProcessThread(this);
 
 	connect(process, 
-		SIGNAL(ImageAdded(QString, Mat)), 
+		SIGNAL(ImageAdded(QString)), 
 		this, 
-		SLOT(InsertIntoTable(QString, Mat)),
+		SLOT(InsertIntoTable(QString)),
 		Qt::QueuedConnection);
 	connect(process,
 		SIGNAL(Logging( char *,unsigned long)),
@@ -142,9 +113,16 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 		 SIGNAL(Beep()),
 		 this,
 		 SLOT(Beep()));
+	connect (process,
+		 SIGNAL(recognizedFace (QString)),
+		 this,
+		 SLOT(ApplyRecognizedFace (QString)),
+		 Qt::QueuedConnection);
 
 	process->start();
+	LoadAllImages ();
 }
+
 
 FaceVuee::~FaceVuee()
 {
@@ -181,7 +159,7 @@ void FaceVuee::addImg_to_database()
 	}
 }
 
-void FaceVuee::OutImage(IplImage* image,Mat image_color_140)
+void FaceVuee::OutImage(IplImage* image, Mat image_color_140)
 {    
 	flag=true;
 
@@ -207,6 +185,28 @@ void FaceVuee::OutImage(IplImage* image,Mat image_color_140)
 	}
 }
 
+void
+FaceVuee::ApplyRecognizedFace (QString name)
+{
+	QImage image;
+	Mat img;
+	if (!name.compare("Unknown"))
+	{
+		image = QImage (":/FaceVue/Resources/unknown.jpg");
+	} else {
+		QString filename = QString (getFaceDir()) + name + QString (COLOR_POSTFIX);
+		img = imread (filename.toStdString());
+		cv::cvtColor (img, img, CV_RGB2BGR);
+		image = QImage ((uchar*) img.data,
+				img.cols,
+				img.rows,
+				img.step,
+				QImage::Format_RGB888);
+	}
+	ui.Lbl_nameR->setText (name);
+	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(image));
+}
+
 void FaceVuee::DeleteImage()
 {
 	int value=ui.tableWidget->rowCount();
@@ -228,16 +228,17 @@ void FaceVuee::DeleteImage()
 }
 
 void
-FaceVuee::InsertIntoTable (QString name, Mat image)
+FaceVuee::InsertIntoTable (QString name)
 {
-	//TODO: why not use the Model/View framework in Qt ?
+	//TODO: use Qt Models
 	QTableWidgetItem *tWidget = new QTableWidgetItem();
 	tWidget->setFlags (Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 	int N = ui.tableWidget->rowCount();
 	ui.tableWidget->insertRow(N);
 
-	Mat _image;
-	cv::cvtColor(image, _image, CV_BGR2RGB);
+	QString filename = QString (getFaceDir()) + name + QString (COLOR_POSTFIX);
+	Mat image = imread (filename.toStdString());
+	cv::cvtColor(image, image, CV_BGR2RGB);
 	QImage sidebar_project_icon_Image ((uchar*)image.data,
 					  image.cols,
 					  image.rows,
@@ -275,27 +276,27 @@ FaceVuee::SaveImage(string str, IplImage* img, Mat &img_rgb)
 
 	stringstream address_gry;
 	stringstream address_rgb;
-	address_gry << getFaceDir() << str << GRAY_SCALE_POSTFIX << ".jpg";
-	address_rgb << getFaceDir() << str << COLOR_POSTFIX << ".jpg";
+	address_gry << getFaceDir() << str << GRAY_SCALE_POSTFIX;
+	address_rgb << getFaceDir() << str << COLOR_POSTFIX;
 
 	imwrite (address_gry.str(), Mat(img)); //save the gray-scale image
 	imwrite (address_rgb.str(), img_rgb);  //save the color image
 
 	process->AddImage (Mat(img), str);
+
 }
 
-QVector<QString> 
-FaceVuee::FindImages(string in)
+void
+FaceVuee::LoadAllImages()
 {
-	QVector<QString> retVal;
-	QDir dir(QString(in.c_str()));
+	QDir dir = QDir(QString(getFaceDir()));
 	dir.setFilter(QDir::Files);
 	dir.setSorting(QDir::Name);
-	QFileInfoList list = dir.entryInfoList();
+	QStringList list = dir.entryList();
 
-	for (QFileInfoList::iterator iter = list.begin(); iter != list.end(); iter++) 
+	for (QStringList::iterator iter = list.begin(); iter != list.end(); iter++) 
 	{
-		QString filename = (*iter).fileName();
+		QString filename = (*iter);
 		QString gry = QString (GRAY_SCALE_POSTFIX);
 		if (filename.endsWith (gry))
 		{
@@ -303,10 +304,12 @@ FaceVuee::FindImages(string in)
 			QString gry_filename = filename;
 			QString rgb_filename = image_name + QString (COLOR_POSTFIX);
 			if (list.contains (rgb_filename))
-				retVal.push_back (image_name);
+			{
+				Mat gray_image = imread (gry_filename.toStdString());
+				process->AddImage (gray_image, image_name.toStdString());
+			}
 		}
 	}
-	return retVal;
 }
 
 void 

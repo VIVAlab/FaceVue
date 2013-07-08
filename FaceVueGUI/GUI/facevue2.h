@@ -33,7 +33,7 @@ class FaceVuee : public QMainWindow
 	private:
 		Ui::FaceVueClass ui;
 		ProcessThread* process;
-		QVector<QString> FindImages(string in);
+		void LoadAllImages ();
 		void SaveImage(string str,IplImage* img,Mat &img_rgb);
 		QPalette *red_Palette;
 		QPalette *green_Palette;
@@ -55,7 +55,8 @@ class FaceVuee : public QMainWindow
 		void DeleteImage();
 		void Beep();
 		void drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label);
-		void InsertIntoTable (QString name, Mat image);
+		void InsertIntoTable (QString name);
+		void ApplyRecognizedFace (QString name);
 };
 
 #endif // FaceVuee_H

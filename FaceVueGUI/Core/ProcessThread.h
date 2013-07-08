@@ -63,6 +63,8 @@ class ProcessThread : public  QThread
 		//setName
 		void setName (const string &name);
 
+		void faceRecognized (QString name);
+
 	private:
 		QMutex mutex; //used to sync the processing mode
 		ProcessingMode *mode;
@@ -74,7 +76,8 @@ class ProcessThread : public  QThread
 		void OutImage(IplImage*,Mat);
 		void Beep();
 		void drawImage (QImage*, QWaitCondition*, QMutex*, QLabel*);
-		void ImageAdded (QString, Mat);
+		void ImageAdded (QString);
+		void recognizedFace (QString);
 };
 
 #endif 

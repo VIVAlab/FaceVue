@@ -39,10 +39,10 @@ ProcessThread::ProcessThread(FaceVuee *gui)
 }
 
 //Add image to database and compute the descriptor for that
-void ProcessThread::AddImage(const Mat &image,const string &str)
+void ProcessThread::AddImage(const Mat &image, const string &str)
 {
         face_obj->add_to_Database (image, str);
-	emit ImageAdded (QString (str.c_str()), image.clone());
+	emit ImageAdded (QString (str.c_str()));
 }
 
 
@@ -93,18 +93,18 @@ void ProcessThread::run()
 	}
 };
 
-//Detect the face in frame image and Add it to database
+//Detect the face in frame image and ?? Add it to database ??
 IplImage* ProcessThread::addImage(IplImage* image, CvRect rect)
 {
 	Mat image_color_140;
 	IplImage* warp_dst = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
-	face_obj->align_Face(image,rect, warp_dst);
+	face_obj->align_Face(image, rect, warp_dst);
 	IplImage* out = NULL;
 	//colored image
 
 	if(face_obj->is_aligned){
-		out = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
-		cvCopyImage(warp_dst,out);
+		out = cvCreateImage(cvSize(128,128), IPL_DEPTH_8U, 1);
+		cvCopyImage(warp_dst, out);
 		int val_x=abs(face_obj->target_Face->right_eye_x-face_obj->target_Face->left_eye_x);
 		int val_y=abs(face_obj->target_Face->mouth_y -face_obj->target_Face->left_eye_y);
 		CvRect rect2 = cvRect(abs(face_obj->target_Face->right_eye_x-2*val_x),
@@ -112,7 +112,7 @@ IplImage* ProcessThread::addImage(IplImage* image, CvRect rect)
 					  rect.width*1.1f,
 					  rect.height*1.1f);
 		cvSetImageROI(image, rect2);
-		IplImage *destination = cvCreateImage( cvSize(140,140),image->depth, image->nChannels );
+		IplImage *destination = cvCreateImage(cvSize(140,140),image->depth, image->nChannels);
 		cvResize(image, destination);
 		image_color_140 = Mat(destination).clone();
 		cvReleaseImage(&destination);
@@ -139,4 +139,10 @@ ProcessThread::setProcessingMode (FaceVuee *gui, Mode mode)
 			break;
 	}
 	mutex.unlock();
+}
+
+void
+ProcessThread::faceRecognized (QString name)
+{
+	emit recognizedFace (name);
 }

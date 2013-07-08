@@ -223,86 +223,88 @@ vector<Rect> FaceVue::detect_ALLFacesROI(const IplImage *frame,IplImage* input)
 //Return region of detected face and target_Face is filled
 CvRect FaceVue::detect_FaceROI(const IplImage *frame)
 {
-    is_Face_Found=false;
-    IplImage* input = cvCreateImage(cvSize(frame->width,frame->height),IPL_DEPTH_8U,1);
-    cvCvtColor(frame,input,CV_RGB2GRAY);
-    std::vector<Rect> faces;
-    cvEqualizeHist(input,input);
+	is_Face_Found=false;
+	IplImage* input = cvCreateImage(cvSize(frame->width,frame->height), IPL_DEPTH_8U, 1);
+	cvCvtColor(frame,input,CV_RGB2GRAY);
+	std::vector<Rect> faces;
+	cvEqualizeHist(input,input);
 
-    /// TO DO What is 1.25,2, Size(30,30)
-    detection_Model->detectMultiScale( input, faces, 1.25, 2, Size(30, 30) );
+	/// TO DO What is 1.25,2, Size(30,30)
+	detection_Model->detectMultiScale( input, faces, 1.25, 2, Size(30, 30) );
 
-    double value;
-    int maxArea = 0;
-    target_Face->index = -1;
+	double value;
+	int maxArea = 0;
+	target_Face->index = -1;
 
-    // stores detected face ROI
-    CvRect rect;
+	// stores detected face ROI
+	CvRect rect;
 
-    for (unsigned int iface = 0; iface < faces.size(); ++iface)
-    {
-        bbox[0] = faces[iface].x;
-        bbox[1] = faces[iface].y;
-        bbox[2] = faces[iface].x + faces[iface].width;
-        bbox[3] = faces[iface].y + faces[iface].height;
+	for (unsigned int iface = 0; iface < faces.size(); ++iface)
+	{
+		bbox[0] = faces[iface].x;
+		bbox[1] = faces[iface].y;
+		bbox[2] = faces[iface].x + faces[iface].width;
+		bbox[3] = faces[iface].y + faces[iface].height;
 
-        flandmark_detect(input, &value ,bbox, landmark_Model, landmarks);
+		flandmark_detect(input, &value ,bbox, landmark_Model, landmarks);
 
-        if(value > detection_threshold)
-        {
-            if(maxArea <=  faces[iface].width*faces[iface].height)
-            {
-                is_Face_Found=true;
-                maxArea = faces[iface].width*faces[iface].height;
-                target_Face->index = iface;
-                target_Face->left_eye_x = (landmarks[4]+landmarks[12])/2;
-                target_Face->left_eye_y = (landmarks[5]+landmarks[13])/2;
+		if(value > detection_threshold)
+		{
+			if(maxArea <=  faces[iface].width*faces[iface].height)
+			{
+				is_Face_Found=true;
+				maxArea = faces[iface].width*faces[iface].height;
+				target_Face->index = iface;
+				target_Face->left_eye_x = (landmarks[4]+landmarks[12])/2;
+				target_Face->left_eye_y = (landmarks[5]+landmarks[13])/2;
 
-                target_Face->right_eye_x = (landmarks[2]+landmarks[10])/2;
-                target_Face->right_eye_y = (landmarks[3]+landmarks[11])/2;
+				target_Face->right_eye_x = (landmarks[2]+landmarks[10])/2;
+				target_Face->right_eye_y = (landmarks[3]+landmarks[11])/2;
 
-                target_Face->mouth_x = (landmarks[6]+landmarks[8])/2;
-                target_Face->mouth_y = (landmarks[7]+landmarks[9])/2;
+				target_Face->mouth_x = (landmarks[6]+landmarks[8])/2;
+				target_Face->mouth_y = (landmarks[7]+landmarks[9])/2;
 
-                rect =  cvRect(faces[iface].x - faces[iface].width/4,faces[iface].y -faces[iface].height/4,3*faces[iface].width/2,3*faces[iface].height/2);
-                if(rect.x + rect.width > input->width)
-                {
-                    rect.width -= 2*(rect.width + rect.x - input->width);
-                    rect.x += rect.width + rect.x -input->width;
-                }
-                if(rect.y + rect.height > input->height)
-                {
-                    rect.height -= 2*(rect.height + rect.y - input->height);
-                    rect.y += rect.height + rect.y - input->height;
-                }
-                if(rect.x < 0)
-                {
-                    rect.width += 2*rect.x;
-                    rect.x=0;
-                }
-                if(rect.y < 0)
-                {
-                    rect.height += 2*rect.y;
-                    rect.y=0;
-                }
+				rect =  cvRect(faces[iface].x - 
+					       faces[iface].width/4,faces[iface].y -
+					       faces[iface].height/4,3*faces[iface].width/2,3*faces[iface].height/2);
+				if(rect.x + rect.width > input->width)
+				{
+					rect.width -= 2*(rect.width + rect.x - input->width);
+					rect.x += rect.width + rect.x -input->width;
+				}
+				if(rect.y + rect.height > input->height)
+				{
+					rect.height -= 2*(rect.height + rect.y - input->height);
+					rect.y += rect.height + rect.y - input->height;
+				}
+				if(rect.x < 0)
+				{
+					rect.width += 2*rect.x;
+					rect.x=0;
+				}
+				if(rect.y < 0)
+				{
+					rect.height += 2*rect.y;
+					rect.y=0;
+				}
 
-            }
-        }
-    }
+			}
+		}
+	}
 
-    if(target_Face->index!=-1)
-    {
+	if(target_Face->index != -1)
+	{
 
-        target_Face->p1_x = faces[target_Face->index].x;
-        target_Face->p1_y = faces[target_Face->index].y;
-        target_Face->p2_x = faces[target_Face->index].x + faces[target_Face->index].width;
-        target_Face->p2_y = faces[target_Face->index].y +faces[target_Face->index].height;
+		target_Face->p1_x = faces[target_Face->index].x;
+		target_Face->p1_y = faces[target_Face->index].y;
+		target_Face->p2_x = faces[target_Face->index].x + faces[target_Face->index].width;
+		target_Face->p2_y = faces[target_Face->index].y +faces[target_Face->index].height;
 
-    }
+	}
 
-    cvReleaseImage(&input);
+	cvReleaseImage(&input);
 
-    return rect;
+	return rect;
 
 }
 

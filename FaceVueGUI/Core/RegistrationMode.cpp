@@ -12,8 +12,7 @@ Mat
 RegistrationMode::process (IplImage *image)
 {
 	//Find a face
-	IplImage z = *image;
-	CvRect rect = facevue->detect_FaceROI(&z);
+	CvRect rect = facevue->detect_FaceROI(image);
 	FaceVue::FaceContent *f = facevue->target_Face;
 
 	//count down

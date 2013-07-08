@@ -17,7 +17,8 @@ RecognitionMode::process (IplImage *image)
 
 	//get the name
 	//gui->process->setName (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)) : "Unknown");
-	std::cout << (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)) : "Unknown") << std::endl;
+	//std::cout << (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)) : "Unknown") << std::endl;
+	gui->process->faceRecognized (QString (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)).c_str() : "Unknown"));
 
 	cvReleaseImage(&warp_dst);
 	FaceVue::FaceContent *f = facevue->target_Face;
