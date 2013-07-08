@@ -70,7 +70,8 @@ class ProcessThread : public  QThread
 		void Logging(char*,unsigned long);
 		void OutImage(IplImage*,Mat);
 		void Beep();
-		void drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*);
+		void drawImage (QImage*, QWaitCondition*, QMutex*, QLabel*);
+		void ImageAdded (QString, Mat);
 };
 
 #endif 

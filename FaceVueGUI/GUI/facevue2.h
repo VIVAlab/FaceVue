@@ -55,6 +55,7 @@ class FaceVuee : public QMainWindow
 		void DeleteImage();
 		void Beep();
 		void drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label);
+		void InsertIntoTable (QString name, Mat image);
 };
 
 #endif // FaceVuee_H

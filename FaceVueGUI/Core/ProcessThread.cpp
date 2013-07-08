@@ -35,14 +35,14 @@ ProcessThread::ProcessThread(FaceVuee *gui, vector<string> imagess)
         face_obj->init_Recognition_Module(face_obj->description_Model,face_obj->recognition_Model);
         face_obj->create_Database(imagess);
 
-
         isStopped = false;
 }
 
 //Add image to database and compute the descriptor for that
 void ProcessThread::AddImage(const Mat &image,const string &str)
 {
-        face_obj->add_to_Database(image,str);
+        face_obj->add_to_Database (image, str);
+	emit ImageAdded (QString (str.c_str()), image.clone());
 }
 
 

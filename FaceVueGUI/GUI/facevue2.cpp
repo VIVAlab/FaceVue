@@ -53,16 +53,11 @@ FaceVuee::getFaceDir ()
 FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
     : QMainWindow(parent, flags)
 {
+	qRegisterMetaType <Mat>("Mat");
 	keyPressed = false;
 	flag=true;
 	ui.setupUi(this);
 	vector<string> images = FindImages(getFaceDir());
-
-	//    ui.imageslistLST->setSelectionBehavior(QAbstractItemView::SelectRows);
-	//    for(int i = 0;i<images.size();i++)
-	//    {
-	//        ui.imageslistLST->insertItem(i,QString(images[i].substr(images[i].find_last_of("\\")+1,images[i].length() - images[i].find_last_of("\\") - 9).c_str()));
-	//    }
 
 	isImage_filled=false;
 	QTableWidgetItem *tWidget;
@@ -70,9 +65,9 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 	ui.tableWidget->insertColumn(0);
 	ui.tableWidget->setAutoScroll(true);
 
+	/*
 	for(unsigned int i=0; i<images.size(); i++)
 	{
-
 		tWidget=new QTableWidgetItem();
 		tWidget->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
 		ui.tableWidget->insertRow(i);
@@ -92,11 +87,9 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 		tWidget->setWhatsThis(QString(images[i].substr(images[i].find_last_of("//")+1,
 						images[i].length() - images[i].find_last_of("//") - 9).c_str()));
 		tWidget->setIcon(sidebar_project_icon_Icon);
-
 		ui.tableWidget->setItem(i,0,tWidget);
-
-
 	}   
+	*/
 
 	red_Palette = new QPalette();
 	red_Palette->setColor(QPalette::Window, Qt::red);
@@ -121,21 +114,25 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 
 	process = new ProcessThread(this, images);
 
-	connect(process,SIGNAL(Logging( char *,unsigned long)),this,SLOT(Logging(char *,unsigned long)));
+	connect(process, 
+		SIGNAL(ImageAdded(QString, Mat)), 
+		this, 
+		SLOT(InsertIntoTable(QString, Mat)),
+		Qt::QueuedConnection);
+	connect(process,
+		SIGNAL(Logging( char *,unsigned long)),
+		this,
+		SLOT(Logging(char *,unsigned long)));
 	connect(process,
 	  	SIGNAL(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
 		this,
 		SLOT(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
 		Qt::QueuedConnection);
-
-	qRegisterMetaType <Mat>("Mat");
-
 	connect (process,
 		 SIGNAL(OutImage(IplImage*,Mat)),
 		 this,
 		 SLOT(OutImage(IplImage*,Mat)), 
 		 Qt::QueuedConnection);
-
 	connect (process,
 		 SIGNAL(Beep()),
 		 this,
@@ -162,7 +159,7 @@ void FaceVuee::addImg_to_database()
 	{
 		QString str;
 		str = ui.lineEdit->text();
-		SaveImage(str.toStdString(),image_gray,image_color);
+		SaveImage(str.toStdString(), image_gray, image_color);
 
 		cvReleaseImage(&image_gray);
 		image_color.release();
@@ -232,52 +229,62 @@ void FaceVuee::DeleteImage()
 	//    ui.imagePreviewLBL->setPixmap(0);
 }
 
-//TODO: this function needs a major cleanup
+void
+FaceVuee::InsertIntoTable (QString name, Mat image)
+{
+	qDebug() << ":inserting";
+	//TODO: why not use the Model/View framework in Qt ?
+	QTableWidgetItem *tWidget = new QTableWidgetItem();
+	tWidget->setFlags (Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+	int N = ui.tableWidget->rowCount();
+	ui.tableWidget->insertRow(N);
+
+	Mat _image;
+	cv::cvtColor(image, _image, CV_BGR2RGB);
+	QImage sidebar_project_icon_Image ((uchar*)image.data,
+					  image.cols,
+					  image.rows,
+					  image.step,
+					  QImage::Format_RGB888);
+	QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
+	tWidget->setText(name);
+	tWidget->setWhatsThis(name);
+	tWidget->setIcon(sidebar_project_icon_Icon);
+	ui.tableWidget->setItem(N, 0, tWidget);
+}
+
 void 
 FaceVuee::SaveImage(string str, IplImage* img, Mat &img_rgb)
 {
 	vector<FaceSample> faces = process->face_obj->recognition->Face_database;
-	int number = 0;
+
+	//if the name already exists, append it with an index value
 	for (int a = faces.size() -1 ; a>-1 ; a--)
 	{
 		string tmplbl = faces[a].label_s;
 		string pname = tmplbl.substr(0,tmplbl.length()-6);
-		if (str.compare(pname)==0)
+		if (!str.compare(pname))
 		{
-			number = atoi(tmplbl.substr(tmplbl.length()-6,2).c_str())+1;
+			int index = atoi(tmplbl.substr(tmplbl.length()-6, 2).c_str())+1;
+
+			//TODO: this assertion can be an exception ... 
+			Q_ASSERT (index < 100);
+			stringstream ss;
+			ss << str << ((index < 10) ? "0" : "");
+			str = ss.str();	
 			break;
 		}
 	}
+
 	stringstream address;
 	stringstream address_rgb;
-	const char *prefix = (number < 10) ? "0" : "";
-	address << getFaceDir() << str << prefix << number << "_gry.jpg";
-	address_rgb << getFaceDir() << str << prefix << number << "_rgb.jpg";
+	address << getFaceDir() << str  << "_gry.jpg";
+	address_rgb << getFaceDir() << str << "_rgb.jpg";
 
-	imwrite(address.str(), Mat(img)); 	//save the gray-scale image
+	imwrite(address.str(), Mat(img));     //save the gray-scale image
 	imwrite(address_rgb.str(), img_rgb);  //save the color image
 
-	process->AddImage(Mat(img),address.str());
-	QTableWidgetItem *tWidget=new QTableWidgetItem();
-	tWidget->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-	int N=ui.tableWidget->rowCount();
-	ui.tableWidget->insertRow(N);
-
-	Mat img_cv;
-	img_cv = imread(address_rgb.str());
-	cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-	QImage sidebar_project_icon_Image ((uchar*)img_cv.data,
-					  img_cv.cols,
-					  img_cv.rows,
-					  img_cv.step,
-					  QImage::Format_RGB888);
-	QIcon sidebar_project_icon_Icon(QPixmap::fromImage(sidebar_project_icon_Image));
-	tWidget->setText(QString(address.str().substr(address.str().find_last_of("//")+1,
-				 address.str().length() - address.str().find_last_of("//") - 11).c_str()));
-	tWidget->setWhatsThis(QString(address.str().substr(address.str().find_last_of("//")+1,
-				      address.str().length() - address.str().find_last_of("//") - 9).c_str()));
-	tWidget->setIcon(sidebar_project_icon_Icon);
-	ui.tableWidget->setItem(N,0,tWidget);
+	process->AddImage (Mat(img), str);
 }
 
 vector<string> FaceVuee::FindImages(string in)
