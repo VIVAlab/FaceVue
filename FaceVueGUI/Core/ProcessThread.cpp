@@ -111,6 +111,10 @@ ProcessThread::addImage(const Mat &image, CvRect rect)
 					  rect.width*1.1f,
 					  rect.height*1.1f);
 		//Mat tmp = Mat (image).clone();
+		if (rect2.x + rect2.width > image.size().width)
+			rect2.width = image.size().width - rect2.x;
+		if (rect2.y + rect2.height > image.size().height)
+			rect2.height = image.size().height - rect2.y;
 		Mat image_color_140 = image(rect2);
 		cv::resize (image_color_140, image_color_140, cvSize (140, 140)); 
 		emit OutImage (out, image_color_140);
