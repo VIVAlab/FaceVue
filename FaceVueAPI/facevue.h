@@ -99,10 +99,10 @@ public:
     vector<Rect> detect_ALLFacesROI(const IplImage *frame,IplImage* input);
 
     //Return region of detected face and target_Face is filled
-    CvRect detect_FaceROI(const IplImage* frame);
+    CvRect detect_FaceROI(const Mat &frame);
 
     //Return aligned face
-    IplImage* align_Face(const IplImage* frame,const CvRect &faceROI, IplImage* warp_dst);
+    Mat align_Face(const Mat& frame, const CvRect &faceROI);
 
     //Compute the image descriptor
     void describe_Face(const Mat &face, Mat &face_descriptor);

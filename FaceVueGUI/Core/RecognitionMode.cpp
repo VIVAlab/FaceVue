@@ -8,19 +8,15 @@ RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 
 /* recognize a face in the image and then draw it */
 Mat
-RecognitionMode::process (IplImage *image)
+RecognitionMode::process (Mat &image)
 {
 	//recognize
 	CvRect rect = facevue->detect_FaceROI(image);
-	IplImage* warp_dst = cvCreateImage(cvSize(128,128), IPL_DEPTH_8U, 1);
-	facevue->align_Face(image, rect, warp_dst);
+	Mat warp_dst = facevue->align_Face(image, rect);
 
-	//get the name
-	//gui->process->setName (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)) : "Unknown");
-	//std::cout << (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)) : "Unknown") << std::endl;
-	gui->process->faceRecognized (QString (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)).c_str() : "Unknown"));
+	QString detected_face = QString (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)).c_str() : "Unknown");
+	gui->process->faceRecognized (detected_face);
 
-	cvReleaseImage(&warp_dst);
 	FaceVue::FaceContent *f = facevue->target_Face;
 
 	//common operation for drawing

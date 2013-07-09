@@ -34,13 +34,13 @@ class FaceVuee : public QMainWindow
 		Ui::FaceVueClass ui;
 		ProcessThread* process;
 		void LoadAllImages ();
-		void SaveImage(string str,IplImage* img,Mat &img_rgb);
+		void SaveImage(string str, Mat img,Mat &img_rgb);
 		QPalette *red_Palette;
 		QPalette *green_Palette;
 		int last_frame;
 		bool isImage_filled;
 		bool flag;
-		IplImage* image_gray;
+		Mat image_gray;
 		Mat image_color;
 		bool keyPressed;
 		const char* getFaceDir();
@@ -51,7 +51,7 @@ class FaceVuee : public QMainWindow
 		void addImg_to_database();
 		//void selectImage(QListWidgetItem *);
 		//void takePicture();
-		void OutImage(IplImage*,Mat);
+		void OutImage(Mat,Mat);
 		void DeleteImage();
 		void Beep();
 		void drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label);

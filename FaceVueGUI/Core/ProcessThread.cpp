@@ -70,16 +70,16 @@ void ProcessThread::run()
 		return;
 	}
 	frame_cnt=0;
-	Mat tmpImage;
+	Mat matImage;
 	while(!(this->isStopped))
 	{
 		frame_cnt++;
-		cap >> tmpImage;
-		resize(tmpImage,image,Size(800,600));
+		cap >> matImage;
+		cv::resize (matImage, matImage, Size(800, 600));
+		//resize(matImage, image, Size(800,600));
 
 		mutex.lock();
-		IplImage *img = &(IplImage)image;
-		Mat matimg = mode->process(img);
+		Mat matimg = mode->process(matImage);
 		QImage qimg((uchar *)matimg.data, matimg.cols, matimg.rows, QImage::Format_RGB888);
 		QLabel *label = mode->getProperLabel();
 		mutex.unlock();
@@ -94,32 +94,28 @@ void ProcessThread::run()
 };
 
 //Detect the face in frame image and ?? Add it to database ??
-IplImage* ProcessThread::addImage(IplImage* image, CvRect rect)
+Mat 
+ProcessThread::addImage(const Mat &image, CvRect rect)
 {
 	Mat image_color_140;
-	IplImage* warp_dst = cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
-	face_obj->align_Face(image, rect, warp_dst);
-	IplImage* out = NULL;
+	Mat warp_dst = face_obj->align_Face(image, rect);
+	Mat out;
 	//colored image
 
 	if(face_obj->is_aligned){
-		out = cvCreateImage(cvSize(128,128), IPL_DEPTH_8U, 1);
-		cvCopyImage(warp_dst, out);
+		out = warp_dst;
 		int val_x=abs(face_obj->target_Face->right_eye_x-face_obj->target_Face->left_eye_x);
 		int val_y=abs(face_obj->target_Face->mouth_y -face_obj->target_Face->left_eye_y);
 		CvRect rect2 = cvRect(abs(face_obj->target_Face->right_eye_x-2*val_x),
 					  abs(face_obj->target_Face->right_eye_y-2*val_y),
 					  rect.width*1.1f,
 					  rect.height*1.1f);
-		cvSetImageROI(image, rect2);
-		IplImage *destination = cvCreateImage(cvSize(140,140),image->depth, image->nChannels);
-		cvResize(image, destination);
-		image_color_140 = Mat(destination).clone();
-		cvReleaseImage(&destination);
+		//Mat tmp = Mat (image).clone();
+		Mat image_color_140 = image(rect2);
+		cv::resize (image_color_140, image_color_140, cvSize (140, 140)); 
 		emit OutImage (out, image_color_140);
 	}
 
-	cvReleaseImage(&warp_dst);
 	return out;
 }
 

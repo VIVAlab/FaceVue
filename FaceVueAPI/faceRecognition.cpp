@@ -12,7 +12,6 @@ FaceRecog::~FaceRecog()
 void FaceRecog::BoWInit(QVector<QString> name_file)
 {
     Face_database.clear();
-    LoadImages(name_file);
     Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
     ExtractKeypoints(temp, 4, 3 );
     his_len=0;
@@ -30,8 +29,8 @@ void FaceRecog::AddNewFace(Mat img,Mat face_descriptor, string name){
     else
         img.copyTo(face2.image);
 
-    face2.file_address=name;
-    face2.label_s=name.substr(name.find_last_of("//")+1,(name.find_last_of(".jpg")-name.find_last_of("//")-4));
+    face2.file_address = name;
+    face2.label_s = name;
     face_descriptor.copyTo(face2.train_data_H);
     Face_database.push_back(face2);
 }
@@ -186,58 +185,39 @@ void FaceRecog::HistCreator(Mat image, Mat &hist_imgs){
 
 void FaceRecog::ExtractKeypoints(Mat& image, int x_step, int y_step)
 {
-    int size_m_patch=image.rows/m_patch;
-    int size_n_patch=image.cols/n_patch;
-    key_labels.clear();
-    keyps.clear();
+	int size_m_patch=image.rows/m_patch;
+	int size_n_patch=image.cols/n_patch;
+	key_labels.clear();
+	keyps.clear();
 
-    for(int j=1;j<=n_patch;j++){
+	for(int j=1;j<=n_patch;j++){
 
-        for (int i=1;i<=m_patch;i++){
-            int l;
-            /////////
+		for (int i=1;i<=m_patch;i++){
+			int l;
 
-            for(int y=(j-1)*size_n_patch;y<(j*size_n_patch);y+=y_step){
+			for(int y=(j-1)*size_n_patch;y<(j*size_n_patch);y+=y_step){
 
-                for (int x=(i-1)*size_m_patch;x<(i*size_m_patch);x+=x_step){
+				for (int x=(i-1)*size_m_patch;x<(i*size_m_patch);x+=x_step){
 
-                    Point k(x,y);
-                    keyps.push_back(k);
-                    l=i+(j-1)*m_patch;
-                    key_labels.push_back(l);
-                }
-            }
+					Point k(x,y);
+					keyps.push_back(k);
+					l=i+(j-1)*m_patch;
+					key_labels.push_back(l);
+				}
+			}
 
-        }
-    }
-
-
-}
-
-bool FaceRecog::LoadImages(QVector<QString> file_path){
-
-	for(int i=0;i<file_path.size();i++){
-		FaceSample sample;
-		sample.file_address = file_path[i].toStdString();
-		sample.label_s = sample.file_address.substr(sample.file_address.find_last_of("\\")+1,(sample.file_address.find_last_of(".jpg")-sample.file_address.find_last_of("\\")-4));
-
-		sample.image= imread(sample.file_address.c_str(),0);
-		if(sample.image.empty())
-			return false;
-		Face_database.push_back(sample);
-
+		}
 	}
-	return true;
 }
 
 void FaceRecog::ReadClusters(){
 
-    int mn_num=m_patch*n_patch;
+	int mn_num = m_patch*n_patch;
 
-    for(int i=0;i<mn_num;i++){
-        Mat temp(K_cluster,59,DataType<uchar>::type, clusters+K_cluster*59*i);
-        centers.push_back(temp);
-    }
+	for(int i=0;i<mn_num;i++){
+		Mat temp(K_cluster,59,DataType<uchar>::type, clusters+K_cluster*59*i);
+		centers.push_back(temp);
+	}
 }
 
 
@@ -246,12 +226,12 @@ int FaceRecog::CompareHist(Mat a, Mat b){
     int dis=0;
 
     for(int i=0;i<n_patch*m_patch;i++){
-        float his=0;
-        for(int j=0 ; j< K_cluster ;j++){
-            his+=min(a.at<uchar>(0,j+i*K_cluster),b.at<uchar>(0,j+i*K_cluster));
-        }
-        if(his>binThreshold)
-            dis++;
+	    float his=0;
+	    for(int j=0; j< K_cluster; j++){
+		    his+=min(a.at<uchar>(0,j+i*K_cluster),b.at<uchar>(0,j+i*K_cluster));
+	    }
+	    if(his>binThreshold)
+		    dis++;
     }
     return dis;
 }

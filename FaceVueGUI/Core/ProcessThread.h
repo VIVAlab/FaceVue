@@ -44,7 +44,7 @@ class ProcessThread : public  QThread
 		void run();
 
 		//Detect the face in frame image and Add it to database
-		IplImage* addImage(IplImage* image, CvRect rect);
+		Mat addImage(const Mat &image, CvRect rect);
 
 		//Find the face region in a frame
 		void findFace(IplImage* image);
@@ -73,7 +73,7 @@ class ProcessThread : public  QThread
 
 	signals:
 		void Logging(char*,unsigned long);
-		void OutImage(IplImage*,Mat);
+		void OutImage(Mat, Mat);
 		void Beep();
 		void drawImage (QImage*, QWaitCondition*, QMutex*, QLabel*);
 		void ImageAdded (QString);

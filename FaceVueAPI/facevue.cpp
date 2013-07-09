@@ -18,7 +18,7 @@ FaceVue::create_Database()
 {
 	recognition->Face_database.clear();
 
-	Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
+	Mat temp = Mat::zeros(128,128,DataType<uchar>::type );
 	recognition->ExtractKeypoints(temp, 4, 3 );
 
 	recognition->ReadClusters();
@@ -33,25 +33,24 @@ FaceVue::create_Database()
 
 //Add image to Database
 //TODO: review this function ! ... .jpg 
-void FaceVue::add_to_Database(Mat image, string name)
+void 
+FaceVue::add_to_Database(Mat image, string name)
 {
-    FaceSample face2;
-    if(image.channels()==3)
-        cvtColor(image,face2.image,CV_RGB2GRAY);
-    else
-        image.copyTo(face2.image);
+	FaceSample face2;
+	if(image.channels() == 3)
+		cvtColor(image, face2.image, CV_RGB2GRAY);
+	else
+		image.copyTo(face2.image);
 
-    face2.file_address=name;
-    face2.label_s=name.substr(name.find_last_of("//")+1,(name.find_last_of(".jpg")-name.find_last_of("//")-4));
+	face2.file_address = name;
+	face2.label_s = name;
 
-    recognition->his_len=0;
-    for (unsigned int i=0;i<recognition->centers.size();i++)
-        recognition->his_len+=recognition->centers[i].rows;
+	recognition->his_len = 0;
+	for (unsigned int i=0; i < recognition->centers.size(); i++)
+		recognition->his_len += recognition->centers[i].rows;
 
-    recognition->HistCreator(face2.image, face2.train_data_H);
-
-    recognition->Face_database.push_back(face2);
-
+	recognition->HistCreator (face2.image, face2.train_data_H);
+	recognition->Face_database.push_back (face2);
 }
 
 //remove image from Databases
@@ -221,13 +220,14 @@ vector<Rect> FaceVue::detect_ALLFacesROI(const IplImage *frame,IplImage* input)
 }
 
 //Return region of detected face and target_Face is filled
-CvRect FaceVue::detect_FaceROI(const IplImage *frame)
+CvRect 
+FaceVue::detect_FaceROI(const Mat&frame)
 {
-	is_Face_Found=false;
-	IplImage* input = cvCreateImage(cvSize(frame->width,frame->height), IPL_DEPTH_8U, 1);
-	cvCvtColor(frame,input,CV_RGB2GRAY);
+	is_Face_Found = false;
+	Mat input;
+	cv::cvtColor (frame, input, CV_RGB2GRAY);
+	cv::equalizeHist (input, input);
 	std::vector<Rect> faces;
-	cvEqualizeHist(input,input);
 
 	/// TO DO What is 1.25,2, Size(30,30)
 	detection_Model->detectMultiScale( input, faces, 1.25, 2, Size(30, 30) );
@@ -246,13 +246,14 @@ CvRect FaceVue::detect_FaceROI(const IplImage *frame)
 		bbox[2] = faces[iface].x + faces[iface].width;
 		bbox[3] = faces[iface].y + faces[iface].height;
 
-		flandmark_detect(input, &value ,bbox, landmark_Model, landmarks);
+		IplImage ipl_input = input;
+		flandmark_detect(&ipl_input, &value ,bbox, landmark_Model, landmarks);
 
 		if(value > detection_threshold)
 		{
 			if(maxArea <=  faces[iface].width*faces[iface].height)
 			{
-				is_Face_Found=true;
+				is_Face_Found = true;
 				maxArea = faces[iface].width*faces[iface].height;
 				target_Face->index = iface;
 				target_Face->left_eye_x = (landmarks[4]+landmarks[12])/2;
@@ -267,15 +268,15 @@ CvRect FaceVue::detect_FaceROI(const IplImage *frame)
 				rect =  cvRect(faces[iface].x - 
 					       faces[iface].width/4,faces[iface].y -
 					       faces[iface].height/4,3*faces[iface].width/2,3*faces[iface].height/2);
-				if(rect.x + rect.width > input->width)
+				if(rect.x + rect.width > input.size().width)
 				{
-					rect.width -= 2*(rect.width + rect.x - input->width);
-					rect.x += rect.width + rect.x -input->width;
+					rect.width -= 2*(rect.width + rect.x - input.size().width);
+					rect.x += rect.width + rect.x -input.size().width;
 				}
-				if(rect.y + rect.height > input->height)
+				if(rect.y + rect.height > input.size().height)
 				{
-					rect.height -= 2*(rect.height + rect.y - input->height);
-					rect.y += rect.height + rect.y - input->height;
+					rect.height -= 2*(rect.height + rect.y - input.size().height);
+					rect.y += rect.height + rect.y - input.size().height;
 				}
 				if(rect.x < 0)
 				{
@@ -302,56 +303,47 @@ CvRect FaceVue::detect_FaceROI(const IplImage *frame)
 
 	}
 
-	cvReleaseImage(&input);
-
 	return rect;
-
 }
 
-//Return aligned face
-IplImage * FaceVue::align_Face(const IplImage *frame, const CvRect &faceROI, IplImage* warp_dst)
+/****************************************
+ * returns an align face in an image
+ * returned img : 128x128 (Gray-scale)
+ ****************************************/
+Mat 
+FaceVue::align_Face(const Mat &frame, const CvRect &faceROI)
 {
-    is_aligned=false;
+	Mat warp_dst = Mat::zeros (128, 128, CV_8UC1);
+	is_aligned = false;
+	Mat input;
+	cv::cvtColor (frame, input, CV_RGB2GRAY);
 
-    IplImage* input = cvCreateImage(cvSize(frame->width,frame->height),IPL_DEPTH_8U,1);
-    cvCvtColor(frame,input,CV_RGB2GRAY);
+	Point2f* pt1 = new Point2f[3];
+	Point2f* pt2 = new Point2f[3];
+	pt2[0] = cvPoint2D32f(27,46);
+	pt2[1] = cvPoint2D32f(101,46);
+	pt2[2] = cvPoint2D32f(64,101);
 
-    CvPoint2D32f* pt1 = new CvPoint2D32f[3];
-    CvPoint2D32f* pt2 = new CvPoint2D32f[3];
-    pt2[0] = cvPoint2D32f(27,46);
-    pt2[1] = cvPoint2D32f(101,46);
-    pt2[2] = cvPoint2D32f(64,101);
+	pt1[0] = cvPoint2D32f(target_Face->right_eye_x - faceROI.x,target_Face->right_eye_y - faceROI.y);
+	pt1[1] = cvPoint2D32f(target_Face->left_eye_x - faceROI.x,target_Face->left_eye_y - faceROI.y);
+	pt1[2] = cvPoint2D32f(target_Face->mouth_x - faceROI.x,target_Face->mouth_y - faceROI.y);
 
-    cvZero(warp_dst);
+	if(pt1[0].x >= 0 && pt1[0].y>=0 &&
+			pt1[1].x >= 0 && pt1[1].y>=0 &&
+			pt1[2].x >= 0 && pt1[2].y>=0 &&
+			pt1[0].x < frame.size().width && pt1[0].y < frame.size().height &&
+			pt1[1].x < frame.size().width && pt1[1].y < frame.size().height&&
+			pt1[2].x < frame.size().width && pt1[2].y < frame.size().height)
+	{
+		is_aligned = true;
+		Mat warp_mat = cv::getAffineTransform (pt1, pt2);
+		Mat face = input (faceROI);
+		cv::warpAffine(face, warp_dst, warp_mat, warp_dst.size());
+	}
 
-    pt1[0] = cvPoint2D32f(target_Face->right_eye_x - faceROI.x,target_Face->right_eye_y - faceROI.y);
-    pt1[1] = cvPoint2D32f(target_Face->left_eye_x - faceROI.x,target_Face->left_eye_y - faceROI.y);
-    pt1[2] = cvPoint2D32f(target_Face->mouth_x - faceROI.x,target_Face->mouth_y - faceROI.y);
-
-    if(pt1[0].x >= 0 && pt1[0].y>=0 &&
-       pt1[1].x >= 0 && pt1[1].y>=0 &&
-       pt1[2].x >= 0 && pt1[2].y>=0 &&
-       pt1[0].x < frame->width && pt1[0].y < frame->height &&
-       pt1[1].x < frame->width && pt1[1].y < frame->height&&
-       pt1[2].x < frame->width && pt1[2].y < frame->height)
-    {
-        is_aligned=true;
-        CvMat* warp_mat = cvCreateMat(2, 3, CV_64FC1);
-        cvGetAffineTransform(pt1, pt2 ,warp_mat);
-        IplImage* face = cvCreateImage(cvSize(faceROI.width,faceROI.height),IPL_DEPTH_8U,1);
-        cvSetImageROI(input, faceROI);
-        cvCopy(input, face, NULL);
-
-        cvWarpAffine(face, warp_dst, warp_mat);
-
-        cvReleaseImage(&face);
-    }
-
-    delete[] pt1;
-    delete[] pt2;
-    cvReleaseImage(&input);
-    return warp_dst;
-
+	delete[] pt1;
+	delete[] pt2;
+	return warp_dst;
 }
 
 //Compute the image descriptor

@@ -12,7 +12,7 @@ class ProcessingMode
 {
 public:
 	ProcessingMode(FaceVuee *gui, FaceVue *facevue);
-	virtual Mat process (IplImage *img)=0;
+	virtual Mat process (Mat &img)=0;
 	virtual QLabel* getProperLabel()=0;
 
 protected:

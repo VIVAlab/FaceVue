@@ -33,7 +33,7 @@ INCLUDEPATH +=../FaceVueAPI
 unix {
    CONFIG += link_pkgconfig
    PKGCONFIG += opencv
-   QMAKE_CXXFLAGS += -fpermissive
+   #QMAKE_CXXFLAGS += -fpermissive
    DEFINES += "FACEVUE_ETC_DIR=/etc/facevue/"
 }
 
@@ -59,7 +59,7 @@ win32 {
    LIBS +=$$PWD\opencv_dlls\libopencv_video241.dll.a
    LIBS +=$$PWD\opencv_dlls\libopencv_stitching241.dll.a
    LIBS +=$$PWD\opencv_dlls\libopencv_videostab241.dll.a
-   LIBS +=$$PWD\Face_api\libFaceVue.a
+   #LIBS +=$$PWD\Face_api\libFaceVue.a
    #LIBS +=C:\Users\Ishmael\Desktop\Projects\FaceVue_api\release\libFaceVue.a
    LIBS +=$$PWD\opencv_dlls\libopencv_highgui241.a
    LIBS +=$$PWD\opencv_dlls\libopencv_imgproc241.a

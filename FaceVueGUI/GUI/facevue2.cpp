@@ -105,9 +105,9 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
 		SLOT(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
 		Qt::QueuedConnection);
 	connect (process,
-		 SIGNAL(OutImage(IplImage*,Mat)),
+		 SIGNAL(OutImage(Mat, Mat)),
 		 this,
-		 SLOT(OutImage(IplImage*,Mat)), 
+		 SLOT(OutImage(Mat, Mat)), 
 		 Qt::QueuedConnection);
 	connect (process,
 		 SIGNAL(Beep()),
@@ -144,8 +144,8 @@ void FaceVuee::addImg_to_database()
 		str = ui.lineEdit->text();
 		SaveImage(str.toStdString(), image_gray, image_color);
 
-		cvReleaseImage(&image_gray);
 		image_color.release();
+		image_gray.release();
 		ui.lineEdit->clear();
 		isImage_filled = false;
 
@@ -159,30 +159,29 @@ void FaceVuee::addImg_to_database()
 	}
 }
 
-void FaceVuee::OutImage(IplImage* image, Mat image_color_140)
+void FaceVuee::OutImage(Mat image, Mat image_color_140)
 {    
 	flag=true;
 
-	if(image)
-	{
-		IplImage* img = cvCreateImage(cvSize(128,128),8,3);
-		image_gray = cvCreateImage(cvSize(128,128),8,3);
-		cv::cvtColor(image_color_140,image_color_140,CV_RGB2BGR);
-		cvCvtColor(image,img,CV_GRAY2RGB);
-		cvCvtColor(image,image_gray,CV_GRAY2RGB);
-		QImage image140 = QImage((uchar *)image_color_140.data, 
-					 image_color_140.cols,
-					 image_color_140.rows,
-					 image_color_140.step, 
-					 QImage::Format_RGB888);
-		ui.Lbl_faceR->setPixmap(QPixmap::fromImage(image140));
-		cv::cvtColor(image_color_140,image_color_140,CV_BGR2RGB);
-		image_color_140.copyTo(image_color);
-		cvReleaseImage(&image);
-		cvReleaseImage(&img);
-		image_color_140.release();
-		isImage_filled=true;
-	}
+	//IplImage* img = cvCreateImage(cvSize(128, 128), 8, 3);
+	//image_gray = cvCreateImage(cvSize(128, 128), 8, 3);
+	Mat img (128, 128, CV_8UC3);
+	image_gray = Mat (128, 128, CV_8UC3);
+	cv::cvtColor(image_color_140, image_color_140, CV_RGB2BGR);
+	cv::cvtColor(image, img, CV_GRAY2RGB);
+	cv::cvtColor(image, image_gray, CV_GRAY2RGB);
+	QImage image140 = QImage((uchar *)image_color_140.data,  
+				 image_color_140.cols, 
+				 image_color_140.rows, 
+				 image_color_140.step,  
+				 QImage::Format_RGB888);
+	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(image140));
+	cv::cvtColor(image_color_140, image_color_140, CV_BGR2RGB);
+	image_color_140.copyTo(image_color);
+	image.release();
+	img.release();
+	image_color_140.release();
+	isImage_filled=true;
 }
 
 void
@@ -252,7 +251,7 @@ FaceVuee::InsertIntoTable (QString name)
 }
 
 void 
-FaceVuee::SaveImage(string str, IplImage* img, Mat &img_rgb)
+FaceVuee::SaveImage(string str, Mat img, Mat &img_rgb)
 {
 	vector<FaceSample> faces = process->face_obj->recognition->Face_database;
 

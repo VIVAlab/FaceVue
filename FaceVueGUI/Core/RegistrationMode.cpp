@@ -9,7 +9,7 @@ RegistrationMode::RegistrationMode(FaceVuee *gui, FaceVue *facevue)
 }
 
 Mat
-RegistrationMode::process (IplImage *image)
+RegistrationMode::process (Mat &image)
 {
 	//Find a face
 	CvRect rect = facevue->detect_FaceROI(image);
