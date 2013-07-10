@@ -11,9 +11,9 @@
 #include <iostream>
 #include <string>
 
-#define GRAY_SCALE_POSTFIX   "_gry.jpg"
-#define COLOR_POSTFIX	     "_rgb.jpg"
-
+#define GRAY_SCALE_POSTFIX   		"_gry.jpg"
+#define COLOR_POSTFIX	     		"_rgb.jpg"
+#define UNKNOWN_IMAGE_RESOURCE_NAME     ":/FaceVue/Resources/unknown.jpg"
 
 // TODO: for windows there are better alternatives 
 // (the installation directory can be registered using QSetting and retreived)
@@ -81,7 +81,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 	ui.FaceR->setAutoFillBackground(true);
 	ui.FaceR->setPalette(*red_Palette);
 
-	QImage img(":/FaceVue/Resources/unknown.jpg");
+	QImage img(UNKNOWN_IMAGE_RESOURCE_NAME);
 	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 
 	last_frame=0;   
@@ -134,35 +134,47 @@ FaceVuee::~FaceVuee()
     process->wait();
     delete process;        
 }
-void FaceVuee::Beep()
+
+void 
+FaceVuee::Beep()
 {
     QApplication::beep();
 }
-void FaceVuee::addImg_to_database()
+
+void 
+FaceVuee::addImg_to_database()
 {
 	if(isImage_filled)
 	{
 		QString str = ui.lineEdit->text();
 		if (SaveImage(str.toStdString(), image_gray, image_color))
 			process->AddImage (image_gray, str.toStdString());
-		else 
+		else {
+			stringstream warnMsg;
+			warnMsg << "Unable to store color or gray-scale image." << endl;
+			warnMsg << "Make sure " << getFaceDir() << " exists and" << endl;
+			warnMsg << "you have permissions to read and write into this directory." << endl;
 			QMessageBox::warning (this, 
-					      tr("Warning"),
-					      tr("Unable to store the color or gray-scale image.\n"),
-					      QMessageBox::Ok);
+					tr("Warning"),
+					tr(warnMsg.str().c_str()),
+					QMessageBox::Ok);
+		}
 
 		image_color.release();
 		image_gray.release();
 		ui.lineEdit->clear();
 		isImage_filled = false;
 
-		QImage img (":/FaceVue/Resources/unknown.jpg");
+		QImage img (UNKNOWN_IMAGE_RESOURCE_NAME);
 		ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 		ui.lineEdit->setText("New face added");
 	}
 	else
 	{
-		ui.lineEdit->setText("No face detected");
+		QMessageBox::warning (this,
+				tr("Warning"),
+				tr("You need to take a snapshot first"),
+				QMessageBox::Ok);
 	}
 }
 
@@ -198,7 +210,7 @@ FaceVuee::ApplyRecognizedFace (QString name)
 	Mat img;
 	if (!name.compare("Unknown"))
 	{
-		image = QImage (":/FaceVue/Resources/unknown.jpg");
+		image = QImage (UNKNOWN_IMAGE_RESOURCE_NAME);
 	} else {
 		QString filename = QString (getFaceDir()) + name + QString (COLOR_POSTFIX);
 		img = imread (filename.toStdString());
@@ -324,7 +336,7 @@ FaceVuee::ChangeMode(int a)
 	switch (a)
 	{
 		case 0:
-			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(QImage(":/FaceVue/Resources/unknown.jpg")));
+			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(QImage(UNKNOWN_IMAGE_RESOURCE_NAME)));
 			ui.deleteBTN->setVisible(true);
 			ui.lineEdit->setVisible(true);
 			ui.add_BTN->setVisible(true);
@@ -359,7 +371,7 @@ FaceVuee::Logging(char* label,unsigned long frame)
 			//            ui.loggingNameLBL->setText(QString(""));
 			ui.Lbl_nameR->setText(QString("Unknown"));
 
-			QImage img (":/FaceVue/Resources/unknown.jpg");
+			QImage img (UNKNOWN_IMAGE_RESOURCE_NAME);
 			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 		}
 
@@ -374,7 +386,7 @@ FaceVuee::Logging(char* label,unsigned long frame)
 			ui.FaceR->setPalette(*red_Palette);
 			//            ui.loggingNameLBL->setText(QString(""));
 			ui.Lbl_nameR->setText(QString("No Face"));
-			QImage img (":/FaceVue/Resources/unknown.jpg");
+			QImage img (UNKNOWN_IMAGE_RESOURCE_NAME);
 			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 		}
 
