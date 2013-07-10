@@ -25,6 +25,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <QMessageBox>
+
 const char*
 FaceVuee::getFaceDir ()
 {
@@ -54,7 +56,7 @@ FaceVuee::getFaceDir ()
 }
 #endif
 
-FaceVuee::FaceVuee(QWidget *parent, Qt::WFlags flags)
+FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
 	qRegisterMetaType <Mat>("Mat");
@@ -140,9 +142,14 @@ void FaceVuee::addImg_to_database()
 {
 	if(isImage_filled)
 	{
-		QString str;
-		str = ui.lineEdit->text();
-		SaveImage(str.toStdString(), image_gray, image_color);
+		QString str = ui.lineEdit->text();
+		if (SaveImage(str.toStdString(), image_gray, image_color))
+			process->AddImage (image_gray, str.toStdString());
+		else 
+			QMessageBox::warning (this, 
+					      tr("Warning"),
+					      tr("Unable to store the color or gray-scale image.\n"),
+					      QMessageBox::Ok);
 
 		image_color.release();
 		image_gray.release();
@@ -250,8 +257,8 @@ FaceVuee::InsertIntoTable (QString name)
 	ui.tableWidget->setItem(N, 0, tWidget);
 }
 
-void 
-FaceVuee::SaveImage(string str, Mat img, Mat &img_rgb)
+bool
+FaceVuee::SaveImage(string str, const Mat &img, const Mat &img_rgb)
 {
 	vector<FaceSample> faces = process->face_obj->recognition->Face_database;
 
@@ -278,11 +285,11 @@ FaceVuee::SaveImage(string str, Mat img, Mat &img_rgb)
 	address_gry << getFaceDir() << str << GRAY_SCALE_POSTFIX;
 	address_rgb << getFaceDir() << str << COLOR_POSTFIX;
 
-	imwrite (address_gry.str(), Mat(img)); //save the gray-scale image
-	imwrite (address_rgb.str(), img_rgb);  //save the color image
+	qDebug () << "storing color image into: " << address_rgb.str().c_str();
+	qDebug () << "storing grey-scale image into: " << address_gry.str().c_str();
 
-	process->AddImage (Mat(img), str);
-
+	return (imwrite (address_gry.str(), img) &&   //save the gray-scale image
+	        imwrite (address_rgb.str(), img_rgb));     //save the color image
 }
 
 void

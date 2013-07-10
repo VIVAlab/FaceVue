@@ -1,7 +1,5 @@
 #ifndef FaceVuee_H
 #define FaceVuee_H
-#include <QtGui/QMainWindow>
-#include "ui_facevue.h"
 #include <vector>
 #include "Core/ProcessThread.h"
 #include <QEvent>
@@ -12,7 +10,9 @@
 #include <opencv/cv.h>
 #include <QWaitCondition>
 #include <QLabel>
- 
+#include <QMainWindow>
+#include "ui_facevue.h"
+
 class RegistrationMode;
 using namespace std;
 class FaceVuee : public QMainWindow
@@ -22,7 +22,7 @@ class FaceVuee : public QMainWindow
 	friend class RecognitionMode;
 
 	public:
-		FaceVuee(QWidget *parent = 0, Qt::WFlags flags = 0);
+		FaceVuee(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 		~FaceVuee();
 		bool isReturnKeyPressed ();
 
@@ -34,7 +34,7 @@ class FaceVuee : public QMainWindow
 		Ui::FaceVueClass ui;
 		ProcessThread* process;
 		void LoadAllImages ();
-		void SaveImage(string str, Mat img,Mat &img_rgb);
+		bool SaveImage(string str, const Mat &img, const Mat &img_rgb);
 		QPalette *red_Palette;
 		QPalette *green_Palette;
 		int last_frame;

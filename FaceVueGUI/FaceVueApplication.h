@@ -1,7 +1,7 @@
 #ifndef _FACE_VUE_APPLICATION_H_
 #define _FACE_VUE_APPLICATION_H_
 
-#include <QtGui/QApplication>
+#include <QApplication>
 
 class FaceVueApplication : public QApplication
 {
