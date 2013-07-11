@@ -130,6 +130,8 @@ FaceVuee::~FaceVuee()
 {
 	delete red_Palette;
 	delete green_Palette;
+	//TODO: FIX THIS ASAP 
+	exit(0);
 	process->isStopped = true;
 	process->wait();
 	delete process;        
