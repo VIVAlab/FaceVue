@@ -34,7 +34,8 @@ class FaceVuee : public QMainWindow
 		Ui::FaceVueClass ui;
 		ProcessThread* process;
 		void LoadAllImages ();
-		bool SaveImage(string str, const Mat &img, const Mat &img_rgb);
+		bool nameAlreadyExists (const string &name) const;
+		bool SaveImage(string &str, const Mat &img, const Mat &img_rgb);
 		QPalette *red_Palette;
 		QPalette *green_Palette;
 		int last_frame;

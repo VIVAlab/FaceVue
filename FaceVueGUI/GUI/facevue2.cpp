@@ -10,6 +10,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <QMessageBox>
 
 #define GRAY_SCALE_POSTFIX   		"_gry.jpg"
 #define COLOR_POSTFIX	     		"_rgb.jpg"
@@ -25,7 +26,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
-#include <QMessageBox>
 
 const char*
 FaceVuee::getFaceDir ()
@@ -128,11 +128,11 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 
 FaceVuee::~FaceVuee()
 {
-    delete red_Palette;
-    delete green_Palette;
-    process->isStopped = true;
-    process->wait();
-    delete process;        
+	delete red_Palette;
+	delete green_Palette;
+	process->isStopped = true;
+	process->wait();
+	delete process;        
 }
 
 void 
@@ -146,9 +146,9 @@ FaceVuee::addImg_to_database()
 {
 	if(isImage_filled)
 	{
-		QString str = ui.lineEdit->text();
-		if (SaveImage(str.toStdString(), image_gray, image_color))
-			process->AddImage (image_gray, str.toStdString());
+		String str = ui.lineEdit->text().toStdString();
+		if (SaveImage(str, image_gray, image_color))
+			process->AddImage (image_gray, str);
 		else {
 			stringstream warnMsg;
 			warnMsg << "Unable to store color or gray-scale image." << endl;
@@ -270,35 +270,33 @@ FaceVuee::InsertIntoTable (QString name)
 }
 
 bool
-FaceVuee::SaveImage(string str, const Mat &img, const Mat &img_rgb)
+FaceVuee::nameAlreadyExists (const string &name) const
 {
-	vector<FaceSample> faces = process->face_obj->recognition->Face_database;
+	vector<FaceSample> &faces = process->face_obj->recognition->Face_database;
+	for (vector <FaceSample>::iterator iter = faces.begin(); iter != faces.end(); iter++)
+		if (!name.compare ((*iter).label_s))
+			return true;
+	return false;
+}
 
-	//if the name already exists, append it with an index value
-	for (int a = faces.size() -1 ; a>-1 ; a--)
+bool
+FaceVuee::SaveImage(string &str, const Mat &img, const Mat &img_rgb)
+{
+	//find a unique label
+	stringstream ss;
+	unsigned int index = 0;
+	do
 	{
-		string tmplbl = faces[a].label_s;
-		string pname = tmplbl.substr(0,tmplbl.length()-6);
-		if (!str.compare(pname))
-		{
-			int index = atoi(tmplbl.substr(tmplbl.length()-6, 2).c_str())+1;
-
-			//TODO: this assertion can be an exception ... 
-			Q_ASSERT (index < 100);
-			stringstream ss;
-			ss << str << ((index < 10) ? "0" : "");
-			str = ss.str();	
-			break;
-		}
-	}
+		ss.str(std::string()); //clear out the stringstream
+		ss << str << index;
+		index ++;
+	} while (nameAlreadyExists (ss.str()));
+	str = ss.str();
 
 	stringstream address_gry;
 	stringstream address_rgb;
 	address_gry << getFaceDir() << str << GRAY_SCALE_POSTFIX;
-	address_rgb << getFaceDir() << str << COLOR_POSTFIX;
-
-	qDebug () << "storing color image into: " << address_rgb.str().c_str();
-	qDebug () << "storing grey-scale image into: " << address_gry.str().c_str();
+	address_rgb << getFaceDir() << str << COLOR_POSTFIX;	
 
 	return (imwrite (address_gry.str(), img) &&   //save the gray-scale image
 	        imwrite (address_rgb.str(), img_rgb));     //save the color image
