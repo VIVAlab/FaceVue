@@ -61,86 +61,64 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 {
 	qRegisterMetaType <Mat>("Mat");
 	keyPressed = false;
+	isImage_filled=false;
 	flag=true;
 	ui.setupUi(this);
 
-	isImage_filled=false;
-
-	ui.tableWidget->insertColumn(0);
-	ui.tableWidget->setAutoScroll(true);
-
-	red_Palette = new QPalette();
-	red_Palette->setColor(QPalette::Window, Qt::red);
-
-	green_Palette = new QPalette();
-	green_Palette->setColor(QPalette::Window, Qt::green);
-
-	ui.FaceD->setAutoFillBackground(true);
-	ui.FaceD->setPalette(*red_Palette);
-
-	ui.FaceR->setAutoFillBackground(true);
-	ui.FaceR->setPalette(*red_Palette);
-
 	QImage img(UNKNOWN_IMAGE_RESOURCE_NAME);
 	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-
-	last_frame=0;   
 
 	connect(ui.add_BTN,SIGNAL(clicked()),this,SLOT(addImg_to_database()));
 	connect(ui.deleteBTN,SIGNAL(clicked()),this,SLOT(DeleteImage()));
 	connect(ui.widgetTAB,SIGNAL(currentChanged(int)),this,SLOT(ChangeMode(int)));
 
-	process = new ProcessThread(this);
+	process = new Process(this);
+	processThread = new QThread;
+	process->moveToThread (processThread);
 
-	connect(process, 
-		SIGNAL(ImageAdded(QString)), 
-		this, 
-		SLOT(InsertIntoTable(QString)),
-		Qt::QueuedConnection);
-	connect(process,
-		SIGNAL(Logging( char *,unsigned long)),
-		this,
-		SLOT(Logging(char *,unsigned long)));
-	connect(process,
-	  	SIGNAL(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
-		this,
-		SLOT(drawImage(QImage*, QWaitCondition*, QMutex*, QLabel*)),
-		Qt::QueuedConnection);
+	connect (this,
+	 	 SIGNAL(readyForNextImage()),
+		 process,
+		 SLOT (captureNextFrame()),
+		 Qt::QueuedConnection);
+
+	connect (process,
+		 SIGNAL (newFrameIsProcessed()),
+		 this,
+		 SLOT(updateUserInterface()),
+		 Qt::QueuedConnection);
+
+	connect (process,
+		 SIGNAL(unableToCapture()),
+		 this,
+		 SLOT(displayErrorUnableToCapture()),
+		 Qt::QueuedConnection);
+
+
+	//TODO: next two signals/slots need to be merged 
 	connect (process,
 		 SIGNAL(OutImage(Mat, Mat)),
 		 this,
 		 SLOT(OutImage(Mat, Mat)), 
 		 Qt::QueuedConnection);
-	connect (process,
-		 SIGNAL(Beep()),
-		 this,
-		 SLOT(Beep()));
-	connect (process,
-		 SIGNAL(recognizedFace (QString)),
-		 this,
-		 SLOT(ApplyRecognizedFace (QString)),
-		 Qt::QueuedConnection);
+	connect(process, 
+		SIGNAL(ImageAdded(QString)), 
+		this, 
+		SLOT(InsertIntoTable(QString)),
+		Qt::QueuedConnection);
 
-	process->start();
+	processThread->start();
 	LoadAllImages ();
+	emit readyForNextImage();
 }
 
 
 FaceVuee::~FaceVuee()
 {
-	delete red_Palette;
-	delete green_Palette;
-	//TODO: FIX THIS ASAP 
-	exit(0);
-	process->isStopped = true;
-	process->wait();
+	processThread->exit (0);
+	processThread->wait ();
 	delete process;        
-}
-
-void 
-FaceVuee::Beep()
-{
-    QApplication::beep();
+	delete processThread;
 }
 
 void 
@@ -271,11 +249,13 @@ FaceVuee::InsertIntoTable (QString name)
 	ui.tableWidget->setItem(N, 0, tWidget);
 }
 
+
 bool
 FaceVuee::nameAlreadyExists (const string &name) const
 {
-	vector<FaceSample> &faces = process->face_obj->recognition->Face_database;
-	for (vector <FaceSample>::iterator iter = faces.begin(); iter != faces.end(); iter++)
+	//TODO: database faces should have a separate object 
+	const vector<FaceSample> &faces = process->getFaceSamples();
+	for (vector <FaceSample>::const_iterator iter = faces.begin(); iter != faces.end(); iter++)
 		if (!name.compare ((*iter).label_s))
 			return true;
 	return false;
@@ -357,67 +337,6 @@ FaceVuee::ChangeMode(int a)
 	}
 }
 
-void 
-FaceVuee::Logging(char* label,unsigned long frame)
-{    
-
-	if(!std::string(label).compare("Unknown"))
-	{
-		if(frame-last_frame>5)
-		{
-			//ui.deleteBTN->setDisabled(false);
-			ui.FaceD->setPalette(*green_Palette);
-			ui.FaceR->setPalette(*red_Palette);
-			//            ui.loggingNameLBL->setText(QString(""));
-			ui.Lbl_nameR->setText(QString("Unknown"));
-
-			QImage img (UNKNOWN_IMAGE_RESOURCE_NAME);
-			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-		}
-
-
-	}
-	else if(!std::string(label).compare("NoFace"))
-	{
-		if(frame-last_frame>5)
-		{
-			//ui.deleteBTN->setDisabled(false);
-			ui.FaceD->setPalette(*red_Palette);
-			ui.FaceR->setPalette(*red_Palette);
-			//            ui.loggingNameLBL->setText(QString(""));
-			ui.Lbl_nameR->setText(QString("No Face"));
-			QImage img (UNKNOWN_IMAGE_RESOURCE_NAME);
-			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-		}
-
-
-
-	}
-	else
-	{
-		//ui.deleteBTN->setDisabled(true);
-		if(frame-last_frame>5)
-		{//TODO: REDO this
-
-			ui.FaceD->setPalette(*green_Palette);
-			ui.FaceR->setPalette(*green_Palette);
-
-			string label_(label);
-			ui.Lbl_nameR->setText(QString((label_.substr(0,label_.length()-6)).c_str()));
-			Mat img_cv;
-			QString str=(getFaceDir() + QString((label_.substr(0,label_.length()-4)+"_rgb").c_str())+".jpg");
-			img_cv=imread(str.toStdString(),1);
-			cv::cvtColor(img_cv,img_cv,CV_BGR2RGB);
-			QImage img((uchar*)img_cv.data, img_cv.cols, img_cv.rows,img_cv.step, QImage::Format_RGB888);
-			ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-
-		}
-		last_frame= frame;
-
-	}
-	string temp=string(label);
-}
-
 void FaceVuee::keyPressEvent(QKeyEvent *event)
 {
 	if (event->key()==Qt::Key_Return)
@@ -445,10 +364,29 @@ FaceVuee::isReturnKeyPressed ()
 void 
 FaceVuee::drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label)
 {
-	mutex->lock();
 	QPixmap pixmap = QPixmap::fromImage (*img).scaled (label->size(), Qt::KeepAspectRatio);
 	label->setPixmap (pixmap);
-	cond->wakeAll();
-	mutex->unlock();
+}
+
+void
+FaceVuee::updateUserInterface ()
+{
+	const QImage& displayImage = process->displayImage ();
+	QLabel *label = process->processingMode()->getProperLabel();
+	QPixmap pixmap = QPixmap::fromImage (displayImage).scaled (label->size(), Qt::KeepAspectRatio);
+	label->setPixmap (pixmap);
+	emit readyForNextImage();
+}
+
+void 
+FaceVuee::displayErrorUnableToCapture ()
+{
+	QMessageBox::warning (this, 
+			tr("Error"),
+			tr("Unable to capture images from a usb camera.\n"
+			   "Another application may be using the camera or\n"
+			   "the usb camera driver may be malfunctioning"),
+			QMessageBox::Ok);
+	//TODO: close the window  (nothing is going to work from this point on)
 }
 

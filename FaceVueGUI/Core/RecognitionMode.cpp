@@ -16,7 +16,8 @@ RecognitionMode::process (Mat &image)
 	Mat warp_dst = facevue->align_Face(image, rect);
 
 	QString detected_face = QString (facevue->is_aligned ? (facevue->recognize_Face(warp_dst)).c_str() : "Unknown");
-	gui->process->faceRecognized (detected_face);
+	//TODO: set the detected_face somewhere and write a getter for it
+	//gui->process->faceRecognized (detected_face);
 
 	FaceVue::FaceContent *f = facevue->target_Face;
 	QPalette detectionPalette;
@@ -56,7 +57,7 @@ RecognitionMode::process (Mat &image)
 }
 
 QLabel*
-RecognitionMode::getProperLabel()
+RecognitionMode::getProperLabel() const
 {
 	return gui->ui.recognitionDisplayLBL;
 }

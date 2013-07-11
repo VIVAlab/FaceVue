@@ -6,16 +6,9 @@
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
 
-void
-ProcessThread::setName (const string &name)
-{
-	this->name = name;
-}
-
 //Process thread Constructor. 
-ProcessThread::ProcessThread(FaceVuee *gui)
+Process::Process(FaceVuee *gui):cap (0)
 {
-	frame_cnt = 0;
         face_obj = new FaceVue();
 	mode = new RegistrationMode (gui, face_obj);
 #if defined(Q_OS_WIN32)
@@ -34,12 +27,19 @@ ProcessThread::ProcessThread(FaceVuee *gui)
 
         face_obj->init_Recognition_Module(face_obj->description_Model,face_obj->recognition_Model);
 	face_obj->create_Database();
-
-        isStopped = false;
 }
 
+//TODO: faces database needs to be separated 
+const vector<FaceSample>& 
+Process::getFaceSamples () const
+{
+	return face_obj->recognition->Face_database;
+}
+
+
 //Add image to database and compute the descriptor for that
-void ProcessThread::AddImage(const Mat &image, const string &str)
+void 
+Process::AddImage(const Mat &image, const string &str)
 {
         face_obj->add_to_Database (image, str);
 	emit ImageAdded (QString (str.c_str()));
@@ -47,7 +47,8 @@ void ProcessThread::AddImage(const Mat &image, const string &str)
 
 
 //Delete image from database
-void ProcessThread::DeleteImage(QString name)
+void 
+Process::DeleteImage(QString name)
 {    
 	mutex.lock();
 	face_obj->remove_from_Database(name);
@@ -55,47 +56,56 @@ void ProcessThread::DeleteImage(QString name)
 }
 
 //Destructor
-ProcessThread::~ProcessThread(void)
+Process::~Process(void)
 {
-        image.release();
+	delete mode;
+        _displayImage.release();
 }
 
-//"Run" part of the process thread.
-void ProcessThread::run()
+const QImage&
+Process::displayImage ()
 {
-	VideoCapture cap(0);
+	return displayQImage;
+}
+
+const ProcessingMode*
+Process::processingMode ()
+{
+	return mode;
+}
+
+/**************************************************
+ * this slot is only called when the previous
+ * image was fully loaded by an observer (eg. GUI)
+ **************************************************/
+void 
+Process::captureNextFrame()
+{
 	if(!cap.isOpened())
 	{
-		qDebug () << "Video capture (cap) was unable to start... ";
+		emit unableToCapture();
 		return;
 	}
-	frame_cnt=0;
-	Mat matImage;
-	while(!(this->isStopped))
-	{
-		frame_cnt++;
-		cap >> matImage;
-		cv::resize (matImage, matImage, Size(800, 600));
-		//resize(matImage, image, Size(800,600));
 
-		mutex.lock();
-		Mat matimg = mode->process(matImage);
-		QImage qimg((uchar *)matimg.data, matimg.cols, matimg.rows, QImage::Format_RGB888);
-		QLabel *label = mode->getProperLabel();
-		mutex.unlock();
+	Mat imageFromCamera;
+	cap >> imageFromCamera;
+	//TODO: try removing resize ...
+	cv::resize (imageFromCamera, imageFromCamera, Size(800, 600));
 
-		QWaitCondition cond;
-		QMutex drawMutex;
-		drawMutex.lock();
-		emit drawImage (&qimg, &cond, &drawMutex, label);
-		cond.wait (&drawMutex);
-		drawMutex.unlock();
-	}
+	mutex.lock();
+	_displayImage = mode->process(imageFromCamera);
+	displayQImage = QImage ((uchar *)_displayImage.data, 
+			        _displayImage.cols, 
+				_displayImage.rows, 
+				QImage::Format_RGB888);
+	mutex.unlock();
+
+	emit newFrameIsProcessed ();
 };
 
 //Detect the face in frame image and ?? Add it to database ??
 Mat 
-ProcessThread::addImage(const Mat &image, CvRect rect)
+Process::addImage(const Mat &image, CvRect rect)
 {
 	Mat image_color_140;
 	Mat warp_dst = face_obj->align_Face(image, rect);
@@ -110,7 +120,6 @@ ProcessThread::addImage(const Mat &image, CvRect rect)
 					  abs(face_obj->target_Face->right_eye_y-2*val_y),
 					  rect.width*1.1f,
 					  rect.height*1.1f);
-		//Mat tmp = Mat (image).clone();
 		if (rect2.x + rect2.width > image.size().width)
 			rect2.width = image.size().width - rect2.x;
 		if (rect2.y + rect2.height > image.size().height)
@@ -125,7 +134,7 @@ ProcessThread::addImage(const Mat &image, CvRect rect)
 
 
 void 
-ProcessThread::setProcessingMode (FaceVuee *gui, Mode mode)
+Process::setProcessingMode (FaceVuee *gui, Mode mode)
 {
 	mutex.lock();
 	delete this->mode;
@@ -141,8 +150,3 @@ ProcessThread::setProcessingMode (FaceVuee *gui, Mode mode)
 	mutex.unlock();
 }
 
-void
-ProcessThread::faceRecognized (QString name)
-{
-	emit recognizedFace (name);
-}

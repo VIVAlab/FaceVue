@@ -11,7 +11,7 @@ class RegistrationMode : public ProcessingMode
 public:
 	RegistrationMode(FaceVuee *gui, FaceVue *facevue);
 	virtual Mat process (Mat &img);
-	virtual QLabel* getProperLabel();
+	virtual QLabel* getProperLabel() const;
 
 private:
 	unsigned int countDown;

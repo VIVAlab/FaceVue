@@ -55,7 +55,7 @@ RegistrationMode::process (Mat &image)
 }
 
 QLabel*
-RegistrationMode::getProperLabel()
+RegistrationMode::getProperLabel() const
 {
 	return gui->ui.registrationDisplayLBL;
 }

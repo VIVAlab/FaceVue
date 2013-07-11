@@ -32,13 +32,11 @@ class FaceVuee : public QMainWindow
 
 	private:
 		Ui::FaceVueClass ui;
-		ProcessThread* process;
+		Process* process;
+		QThread* processThread;
 		void LoadAllImages ();
 		bool nameAlreadyExists (const string &name) const;
 		bool SaveImage(string &str, const Mat &img, const Mat &img_rgb);
-		QPalette *red_Palette;
-		QPalette *green_Palette;
-		int last_frame;
 		bool isImage_filled;
 		bool flag;
 		Mat image_gray;
@@ -48,16 +46,17 @@ class FaceVuee : public QMainWindow
 
 	private slots:
 		void ChangeMode(int);
-		void Logging(char *,unsigned long);
 		void addImg_to_database();
-		//void selectImage(QListWidgetItem *);
-		//void takePicture();
 		void OutImage(Mat,Mat);
 		void DeleteImage();
-		void Beep();
 		void drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label);
 		void InsertIntoTable (QString name);
 		void ApplyRecognizedFace (QString name);
+		void updateUserInterface ();
+		void displayErrorUnableToCapture ();
+
+	signals:
+		void readyForNextImage();
 };
 
 #endif // FaceVuee_H

@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 #first compile the library
-SUBDIRS = VideoCapturer FaceVueAPI 
+SUBDIRS = FaceVueAPI 
 
 #then compile the executable
 CONFIG += ordered

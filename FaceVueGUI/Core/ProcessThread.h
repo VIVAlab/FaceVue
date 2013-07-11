@@ -1,5 +1,5 @@
-#ifndef PROCESSTHREAD_H
-#define PROCESSTHREAD_H
+#ifndef PROCESS_H
+#define PROCESS_H
 
 #include <QMutex>
 #include <QThread>
@@ -26,58 +26,41 @@ enum Mode {
 
 class FaceVuee;  //foreward declaration
 
-class ProcessThread : public  QThread
+class Process : public  QObject
 {
 	Q_OBJECT
 	public:
 
-		//Process thread Constructor. We Load all the models and images to the database here.
-		ProcessThread(FaceVuee* gui);
-
-		//Destructor
-		~ProcessThread(void);
-
-		Mat image;
-		bool isStopped;
-
-		//"Run" part of the process thread.
-		void run();
-
-		//Detect the face in frame image and Add it to database
+		Process (FaceVuee* gui);
+		~Process(void);
 		Mat addImage(const Mat &image, CvRect rect);
-
-		//Find the face region in a frame
 		void findFace(IplImage* image);
-
-		//Add image to database and compute the descriptor for that
 		void AddImage(const Mat& image,const string& str);
-
-		//Delete image from database
 		void DeleteImage(QString name);
-		FaceVue *face_obj;
-
-
-		//change the processing mode
 		void setProcessingMode (FaceVuee *gui, Mode mode);
+		const QImage& displayImage ();
+		const ProcessingMode* processingMode ();
 
-		//setName
-		void setName (const string &name);
+		//TODO: faces database needs to be separated 
+		const vector<FaceSample>& getFaceSamples () const;
 
-		void faceRecognized (QString name);
 
 	private:
-		QMutex mutex; //used to sync the processing mode
-		ProcessingMode *mode;
-		string name;
-		unsigned int frame_cnt;
+		Mat _displayImage; 	//used to ensure qimage has a buffer  
+		QImage displayQImage;   //image to display
+		QMutex mutex; 		//used to sync the processing mode
+		ProcessingMode* mode;
+		cv::VideoCapture cap;
+		FaceVue *face_obj;
+
+	public slots:
+		void captureNextFrame ();
 
 	signals:
-		void Logging(char*,unsigned long);
-		void OutImage(Mat, Mat);
-		void Beep();
-		void drawImage (QImage*, QWaitCondition*, QMutex*, QLabel*);
-		void ImageAdded (QString);
-		void recognizedFace (QString);
+		void OutImage(Mat, Mat);    //TODO: RENAME & MERGE WITH ImageAdded
+		void ImageAdded (QString);  
+		void newFrameIsProcessed();
+		void unableToCapture ();
 };
 
 #endif 
