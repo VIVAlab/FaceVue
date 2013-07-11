@@ -1,5 +1,6 @@
 #include "RecognitionMode.h"
 #include <GUI/facevue2.h>
+#include <QDebug>
 
 RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 	:ProcessingMode (gui, facevue)
@@ -18,6 +19,14 @@ RecognitionMode::process (Mat &image)
 	gui->process->faceRecognized (detected_face);
 
 	FaceVue::FaceContent *f = facevue->target_Face;
+	QPalette detectionPalette;
+	detectionPalette.setColor (QPalette::Window, (f->index == -1) ? Qt::red : Qt::green); 
+	gui->ui.FaceD->setPalette (detectionPalette);
+
+	QPalette recognitionPalette;
+	recognitionPalette.setColor (QPalette::Window, !detected_face.compare("Unknown") ? Qt::red : Qt::green);
+	gui->ui.FaceR->setPalette (recognitionPalette);
+	
 
 	//common operation for drawing
 	Mat img;
