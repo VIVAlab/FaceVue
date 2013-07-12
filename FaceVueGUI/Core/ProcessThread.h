@@ -38,6 +38,7 @@ class Process : public  QObject
 		void AddImage(const Mat& image,const string& str);
 		void DeleteImage(QString name);
 		void setProcessingMode (FaceVuee *gui, Mode mode);
+		void returnKeyPressed (bool isPressed);
 		const QImage& displayImage ();
 		const ProcessingMode* processingMode ();
 

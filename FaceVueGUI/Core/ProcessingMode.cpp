@@ -4,22 +4,51 @@ ProcessingMode::ProcessingMode (FaceVuee *gui, FaceVue *facevue)
 {
 	this->facevue = facevue;
 	this->gui = gui;
-	recognitionPalette.setColor (QPalette::Window, Qt::red);
-	registrationPalette.setColor (QPalette::Window, Qt::red);
+	flags = 0; //no flags are set
 }
 
-QPalette
-ProcessingMode::getRecognitionLabelPalette () const
+bool
+ProcessingMode::isRecognized() const
 {
-	return recognitionPalette;
+	return (flags & PROCESSING_MODE_FLAG_RECOGNIZED);
 }
 
-QPalette
-ProcessingMode::getDetectionLabelPalette () const
+bool
+ProcessingMode::isDetected() const
 {
-	return registrationPalette;
+	return (flags & PROCESSING_MODE_FLAG_DETECTED);
+}
+
+
+bool 
+ProcessingMode::isReturnKeyPressed() const
+{
+	return (flags & PROCESSING_MODE_RETURN_KEY);
 }
 
 ProcessingMode::~ProcessingMode()
 {
 }
+
+void 
+ProcessingMode::setRecognitionFlag (bool set)
+{
+	flags = set ? (flags | PROCESSING_MODE_FLAG_RECOGNIZED) :  
+		      (flags & ~(PROCESSING_MODE_FLAG_RECOGNIZED)); 
+}
+
+void 
+ProcessingMode::setDetectionFlag (bool set)
+{
+	flags = set ? (flags | PROCESSING_MODE_FLAG_DETECTED) :
+		      (flags & ~(PROCESSING_MODE_FLAG_DETECTED));
+}
+	
+void 
+ProcessingMode::setReturnKeyFlag (bool set)
+{
+	flags = set ? (flags | PROCESSING_MODE_RETURN_KEY) :
+		      (flags & ~(PROCESSING_MODE_RETURN_KEY));
+}
+
+

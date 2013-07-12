@@ -24,7 +24,6 @@ class FaceVuee : public QMainWindow
 	public:
 		FaceVuee(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 		~FaceVuee();
-		bool isReturnKeyPressed ();
 
 	protected:
 		void keyPressEvent(QKeyEvent *);
@@ -41,21 +40,36 @@ class FaceVuee : public QMainWindow
 		bool flag;
 		Mat image_gray;
 		Mat image_color;
-		bool keyPressed;
 		const char* getFaceDir();
 
+		//functions for updating the UI 
+		void updateUserInterfaceInRecognitionMode ();
+		void updateUserInterfaceInRegistrationMode ();
+		void updateLabelKeepAspectRatio (QLabel *label, const QImage &image);
+
 	private slots:
+		//TabWidget changemode
 		void ChangeMode(int);
-		void addImg_to_database();
+
+		//display image functions
 		void OutImage(Mat,Mat);
-		void DeleteImage();
-		void drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label);
-		void InsertIntoTable (QString name);
 		void ApplyRecognizedFace (QString name);
+
+		//Table modification functions
+		void InsertIntoTable (QString name);
+		void addImg_to_database();
+		void DeleteImage();
+
+		//UI update functions
 		void updateUserInterface ();
+		
+		//UI error diplayers
 		void displayErrorUnableToCapture ();
 
 	signals:
+		//emitted when the UI is ready 
+		//for the processing thread
+		//to submit its next image
 		void readyForNextImage();
 };
 

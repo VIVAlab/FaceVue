@@ -8,7 +8,6 @@ class RecognitionMode : public ProcessingMode
 public:
 	RecognitionMode(FaceVuee *gui, FaceVue *facevue);
 	virtual Mat process (Mat &img);
-	virtual QLabel* getProperLabel() const;
 };
 
 #endif /* end of include guard: RECOGNITIONMODE_H */

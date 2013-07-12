@@ -60,7 +60,6 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
 	qRegisterMetaType <Mat>("Mat");
-	keyPressed = false;
 	isImage_filled=false;
 	flag=true;
 	ui.setupUi(this);
@@ -340,41 +339,77 @@ FaceVuee::ChangeMode(int a)
 void FaceVuee::keyPressEvent(QKeyEvent *event)
 {
 	if (event->key()==Qt::Key_Return)
-		keyPressed = true;
+		process->returnKeyPressed (true);
 	QMainWindow::keyPressEvent (event);
 }
 
 void
 FaceVuee::keyReleaseEvent (QKeyEvent *event)
 {	if (event->key()==Qt::Key_Return)
-		keyPressed = false;
+		process->returnKeyPressed (false);
 	QMainWindow::keyReleaseEvent (event);
 }
 
-bool
-FaceVuee::isReturnKeyPressed ()
+/*****************************************************
+ * draws image onto the label by keeping the aspect
+ * by keeping the aspect ratio of the image relative
+ * to the label
+ *****************************************************/
+void
+FaceVuee::updateLabelKeepAspectRatio (QLabel *label, const QImage &image)
 {
-	return keyPressed;
+	QPixmap pixmap = QPixmap::fromImage(image).scaled(label->size(), Qt::KeepAspectRatio);
+	label->setPixmap (pixmap);
+}
+
+/******************************************
+ * this method is invoked only if the 
+ * recognition tab is the current tab 
+ ******************************************/
+void
+FaceVuee::updateUserInterfaceInRecognitionMode ()
+{
+	//draw the image
+	updateLabelKeepAspectRatio (ui.recognitionDisplayLBL, process->displayImage ());
+	
+	//set the recognition/detection label palettes
+	QPalette greenPalette (QPalette::Window, Qt::green);
+	QPalette redPalette (QPalette::Window, Qt::red);
+	ui.FaceR->setPalette (process->processingMode()->isRecognized() ? greenPalette : redPalette);
+	ui.FaceD->setPalette (process->processingMode()->isDetected() ? greenPalette : redPalette);
+
 }
 
 
-/**
- * TODO: get rid of cond, mutex by using the VideoCapturer framework
- **/
-void 
-FaceVuee::drawImage (QImage *img, QWaitCondition *cond, QMutex *mutex, QLabel *label)
+/******************************************
+ * this method is invoked only if the 
+ * registration tab is the current tab 
+ ******************************************/
+void
+FaceVuee::updateUserInterfaceInRegistrationMode ()
 {
-	QPixmap pixmap = QPixmap::fromImage (*img).scaled (label->size(), Qt::KeepAspectRatio);
-	label->setPixmap (pixmap);
+	//draw the image
+	updateLabelKeepAspectRatio (ui.registrationDisplayLBL, process->displayImage ());
+	
 }
 
 void
 FaceVuee::updateUserInterface ()
 {
-	const QImage& displayImage = process->displayImage ();
-	QLabel *label = process->processingMode()->getProperLabel();
-	QPixmap pixmap = QPixmap::fromImage (displayImage).scaled (label->size(), Qt::KeepAspectRatio);
-	label->setPixmap (pixmap);
+	//update based on active tab-widget 
+	switch (ui.widgetTAB->currentIndex ())
+	{
+		case 0:
+			updateUserInterfaceInRegistrationMode ();
+			break;
+		case 1:
+			updateUserInterfaceInRecognitionMode ();
+			break;
+		default:
+			qDebug () << "unrecognized mode !";
+			break;
+	}
+
 	emit readyForNextImage();
 }
 

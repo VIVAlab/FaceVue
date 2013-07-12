@@ -18,9 +18,9 @@ RegistrationMode::process (Mat &image)
 	//count down
 	countDown = (countDown==0) ? 0 : (countDown-1);
 
-	if(gui->isReturnKeyPressed()     //the return key is pressed
-	   && f->index != -1 		 //a face is detected
-	   && countDown == 0) 		 //last snapshot was taken at least SNAPSHOT_FRAME_GAP ago
+	if(isReturnKeyPressed()     //the return key is pressed
+	   && f->index != -1 	    //a face is detected
+	   && countDown == 0)       //last snapshot was taken at least SNAPSHOT_FRAME_GAP ago
 	{
 		countDown = SNAPSHOT_FRAME_GAP;  //reset the counter
 		gui->process->addImage(image, rect);
@@ -54,8 +54,3 @@ RegistrationMode::process (Mat &image)
 	return img;
 }
 
-QLabel*
-RegistrationMode::getProperLabel() const
-{
-	return gui->ui.registrationDisplayLBL;
-}

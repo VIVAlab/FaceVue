@@ -20,15 +20,9 @@ RecognitionMode::process (Mat &image)
 	//gui->process->faceRecognized (detected_face);
 
 	FaceVue::FaceContent *f = facevue->target_Face;
-	QPalette detectionPalette;
-	detectionPalette.setColor (QPalette::Window, (f->index == -1) ? Qt::red : Qt::green); 
-	gui->ui.FaceD->setPalette (detectionPalette);
-
-	QPalette recognitionPalette;
-	recognitionPalette.setColor (QPalette::Window, !detected_face.compare("Unknown") ? Qt::red : Qt::green);
-	gui->ui.FaceR->setPalette (recognitionPalette);
+	setDetectionFlag (f->index != -1);
+	setRecognitionFlag (detected_face.compare("Unknown"));
 	
-
 	//common operation for drawing
 	Mat img;
 	cvtColor(Mat(image),img,CV_BGR2RGB);
@@ -54,11 +48,5 @@ RecognitionMode::process (Mat &image)
 	warpAffine(img2, img, rot_mat2, img.size());
 
 	return img;
-}
-
-QLabel*
-RecognitionMode::getProperLabel() const
-{
-	return gui->ui.recognitionDisplayLBL;
 }
 

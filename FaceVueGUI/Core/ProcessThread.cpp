@@ -150,3 +150,10 @@ Process::setProcessingMode (FaceVuee *gui, Mode mode)
 	mutex.unlock();
 }
 
+void 
+Process::returnKeyPressed (bool isPressed)
+{
+	mutex.lock();
+	mode->setReturnKeyFlag (isPressed);
+	mutex.unlock();
+}
