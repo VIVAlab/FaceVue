@@ -1,4 +1,4 @@
-#include "Core/ProcessThread.h"
+#include "Core/Process.h"
 #include <QDebug>
 #include <facevue.h>
 #include "opencv2/highgui/highgui.hpp"
@@ -61,6 +61,16 @@ Process::~Process(void)
 	delete mode;
         _displayImage.release();
 }
+
+
+void
+Process::drawOverlay (bool draw)
+{
+	mutex.lock ();
+	mode->setDrawOverlayFlag (draw);
+	mutex.unlock ();
+}
+
 
 const QImage&
 Process::displayImage ()

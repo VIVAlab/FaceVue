@@ -67,9 +67,11 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 	QImage img(UNKNOWN_IMAGE_RESOURCE_NAME);
 	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 
-	connect(ui.add_BTN,SIGNAL(clicked()),this,SLOT(addImg_to_database()));
-	connect(ui.deleteBTN,SIGNAL(clicked()),this,SLOT(DeleteImage()));
-	connect(ui.widgetTAB,SIGNAL(currentChanged(int)),this,SLOT(ChangeMode(int)));
+	//User Interface signals 
+	connect(ui.add_BTN, SIGNAL(clicked()), this, SLOT(addImg_to_database()));
+	connect(ui.deleteBTN, SIGNAL(clicked()), this, SLOT(DeleteImage()));
+	connect(ui.widgetTAB, SIGNAL(currentChanged(int)), this, SLOT(ChangeMode(int)));
+	connect(ui.overlayCKB, SIGNAL(stateChanged(int)), this, SLOT(checkBoxStateChanged(int)));
 
 	process = new Process(this);
 	processThread = new QThread;
@@ -108,6 +110,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 
 	processThread->start();
 	LoadAllImages ();
+	ChangeMode (ui.widgetTAB->currentIndex ());
 	emit readyForNextImage();
 }
 
@@ -322,6 +325,7 @@ FaceVuee::ChangeMode(int a)
 			ui.label_name->setVisible(true);
 			ui.Lbl_nameR->setVisible(false);
 			process->setProcessingMode (this, REGISTRATION_MODE);
+			process->drawOverlay (true); //draw overlay in registration mode!
 			break;
 		case 1:
 			ui.deleteBTN->setVisible(false);
@@ -330,6 +334,7 @@ FaceVuee::ChangeMode(int a)
 			ui.label_name->setVisible(false);
 			ui.Lbl_nameR->setVisible(true);
 			process->setProcessingMode (this, RECOGNITION_MODE);
+			process->drawOverlay (ui.overlayCKB->isChecked());
 			break;
 		default:
 			qDebug() << "Unexpected mode";
@@ -422,6 +427,23 @@ FaceVuee::displayErrorUnableToCapture ()
 			   "Another application may be using the camera or\n"
 			   "the usb camera driver may be malfunctioning"),
 			QMessageBox::Ok);
-	//TODO: close the window  (nothing is going to work from this point on)
+	this->close();
+}
+
+void 
+FaceVuee::checkBoxStateChanged (int state)
+{
+	switch (state)
+	{
+		case Qt::Unchecked:
+			process->drawOverlay (false);
+			break;
+		case Qt::Checked:
+			process->drawOverlay (true);
+			break;
+		default:
+			qDebug () << "checkbox state unexpected!";
+			break;
+	}
 }
 

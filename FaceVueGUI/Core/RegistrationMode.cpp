@@ -9,7 +9,7 @@ RegistrationMode::RegistrationMode(FaceVuee *gui, FaceVue *facevue)
 }
 
 Mat
-RegistrationMode::process (Mat &image)
+RegistrationMode::process (const Mat &image)
 {
 	//Find a face
 	CvRect rect = facevue->detect_FaceROI(image);
@@ -26,9 +26,9 @@ RegistrationMode::process (Mat &image)
 		gui->process->addImage(image, rect);
 	} 
 
-	//common stuff for drawing
+	//draw onto a new image
 	Mat img;
-	cvtColor(Mat(image),img,CV_BGR2RGB);
+	cvtColor(image, img, CV_BGR2RGB);
 
 	Point center = Point( img.cols/2, img.rows/2 );
 	double angle = 90.0;
@@ -37,7 +37,7 @@ RegistrationMode::process (Mat &image)
 	Mat rot_mat = getRotationMatrix2D (center, angle, scale);
 	Mat rot_mat2 = getRotationMatrix2D (center, -1.f*angle, scale);
 
-	if(f->index != -1)
+	if(drawsOverlay() && f->index != -1)
 	{
 		circle(img, Point(f->right_eye_x, f->right_eye_y), 3, Scalar(0, 0, 255), CV_FILLED);
 		circle(img, Point(f->left_eye_x, f->left_eye_y), 3, Scalar(0, 0, 255), CV_FILLED);

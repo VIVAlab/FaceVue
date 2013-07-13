@@ -39,6 +39,7 @@ class Process : public  QObject
 		void DeleteImage(QString name);
 		void setProcessingMode (FaceVuee *gui, Mode mode);
 		void returnKeyPressed (bool isPressed);
+		void drawOverlay (bool draw);
 		const QImage& displayImage ();
 		const ProcessingMode* processingMode ();
 

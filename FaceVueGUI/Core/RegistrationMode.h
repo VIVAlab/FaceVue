@@ -10,7 +10,7 @@ class RegistrationMode : public ProcessingMode
 {
 public:
 	RegistrationMode(FaceVuee *gui, FaceVue *facevue);
-	virtual Mat process (Mat &img);
+	virtual Mat process (const Mat &img);
 
 private:
 	unsigned int countDown;

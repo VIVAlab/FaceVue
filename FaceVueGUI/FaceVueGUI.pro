@@ -7,7 +7,7 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-    Core/ProcessThread.cpp \   
+    Core/Process.cpp \   
     Core/ProcessingMode.cpp\
     Core/RegistrationMode.cpp\
     Core/RecognitionMode.cpp\
@@ -15,7 +15,7 @@ SOURCES += main.cpp\
     GUI/facevue2.cpp
 
 HEADERS  += \
-    Core/ProcessThread.h \   
+    Core/Process.h \   
     Core/ProcessingMode.h\
     Core/RegistrationMode.h\
     Core/RecognitionMode.h\

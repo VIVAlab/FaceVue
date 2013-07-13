@@ -9,7 +9,7 @@ RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 
 /* recognize a face in the image and then draw it */
 Mat
-RecognitionMode::process (Mat &image)
+RecognitionMode::process (const Mat &image)
 {
 	//recognize
 	CvRect rect = facevue->detect_FaceROI(image);
@@ -23,9 +23,9 @@ RecognitionMode::process (Mat &image)
 	setDetectionFlag (f->index != -1);
 	setRecognitionFlag (detected_face.compare("Unknown"));
 	
-	//common operation for drawing
+	//draw onto a new image
 	Mat img;
-	cvtColor(Mat(image),img,CV_BGR2RGB);
+	cvtColor(image, img, CV_BGR2RGB);
 
 	Point center = Point( img.cols/2, img.rows/2 );
 	double angle = 90.0;
@@ -34,7 +34,7 @@ RecognitionMode::process (Mat &image)
 	Mat rot_mat = getRotationMatrix2D (center, angle, scale);
 	Mat rot_mat2 = getRotationMatrix2D (center, -1.f*angle, scale);
 	
-	if(gui->ui.overlayCKB->isChecked() && f->index != -1)
+	if(drawsOverlay() && f->index != -1)
 	{
 		circle(img, Point(f->right_eye_x, f->right_eye_y), 3, Scalar(0, 0, 255), CV_FILLED);
 		circle(img, Point(f->left_eye_x, f->left_eye_y), 3, Scalar(0, 0, 255), CV_FILLED);

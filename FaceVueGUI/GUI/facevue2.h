@@ -1,7 +1,7 @@
 #ifndef FaceVuee_H
 #define FaceVuee_H
 #include <vector>
-#include "Core/ProcessThread.h"
+#include "Core/Process.h"
 #include <QEvent>
 #include <QKeyEvent>
 #include <QFile>
@@ -48,6 +48,8 @@ class FaceVuee : public QMainWindow
 		void updateLabelKeepAspectRatio (QLabel *label, const QImage &image);
 
 	private slots:
+		void checkBoxStateChanged (int);
+
 		//TabWidget changemode
 		void ChangeMode(int);
 

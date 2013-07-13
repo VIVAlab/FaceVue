@@ -14,12 +14,18 @@ class ProcessingMode
 	public:
 		ProcessingMode(FaceVuee *gui, FaceVue *facevue);
 		virtual ~ProcessingMode();
-		virtual Mat process (Mat &img)=0;
+		virtual Mat process (const Mat &img)=0;
+
+		//configuration getter functions
 		bool isRecognized() const;
 		bool isDetected() const;
 		bool isReturnKeyPressed() const;
+		bool drawsOverlay() const;
 
+		//configuration setter functions
 		void setReturnKeyFlag (bool set);
+		void setDrawOverlayFlag (bool set);
+
 
 	protected:
 		FaceVue *facevue;
@@ -30,9 +36,10 @@ class ProcessingMode
 
 	private:
 		enum {
-			PROCESSING_MODE_FLAG_DETECTED  	= 1 << 0,
-			PROCESSING_MODE_FLAG_RECOGNIZED	= 1 << 1,
-			PROCESSING_MODE_RETURN_KEY	= 1 << 2
+			PROCESSING_MODE_FLAG_DETECTED  		= 1 << 0,
+			PROCESSING_MODE_FLAG_RECOGNIZED		= 1 << 1,
+			PROCESSING_MODE_FLAG_RETURN_KEY		= 1 << 2,
+			PROCESSING_MODE_FLAG_DRAW_OVERLAY       = 1 << 3
 		};
 		unsigned int flags;
 };

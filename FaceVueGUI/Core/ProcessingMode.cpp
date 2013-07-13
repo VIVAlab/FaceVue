@@ -1,5 +1,8 @@
 #include "ProcessingMode.h"
 
+//this macro helps set/unset a flag
+#define SET_FLAG(flags,flag,set) (flags=set?(flags | flag):(flags & ~(flag)))
+
 ProcessingMode::ProcessingMode (FaceVuee *gui, FaceVue *facevue)
 {
 	this->facevue = facevue;
@@ -23,7 +26,13 @@ ProcessingMode::isDetected() const
 bool 
 ProcessingMode::isReturnKeyPressed() const
 {
-	return (flags & PROCESSING_MODE_RETURN_KEY);
+	return (flags & PROCESSING_MODE_FLAG_RETURN_KEY);
+}
+
+bool
+ProcessingMode::drawsOverlay () const
+{
+	return (flags & PROCESSING_MODE_FLAG_DRAW_OVERLAY);
 }
 
 ProcessingMode::~ProcessingMode()
@@ -33,22 +42,23 @@ ProcessingMode::~ProcessingMode()
 void 
 ProcessingMode::setRecognitionFlag (bool set)
 {
-	flags = set ? (flags | PROCESSING_MODE_FLAG_RECOGNIZED) :  
-		      (flags & ~(PROCESSING_MODE_FLAG_RECOGNIZED)); 
+	SET_FLAG(flags, PROCESSING_MODE_FLAG_RECOGNIZED, set); 
 }
 
 void 
 ProcessingMode::setDetectionFlag (bool set)
 {
-	flags = set ? (flags | PROCESSING_MODE_FLAG_DETECTED) :
-		      (flags & ~(PROCESSING_MODE_FLAG_DETECTED));
+	SET_FLAG(flags, PROCESSING_MODE_FLAG_DETECTED, set); 
 }
 	
 void 
 ProcessingMode::setReturnKeyFlag (bool set)
 {
-	flags = set ? (flags | PROCESSING_MODE_RETURN_KEY) :
-		      (flags & ~(PROCESSING_MODE_RETURN_KEY));
+	SET_FLAG(flags, PROCESSING_MODE_FLAG_RETURN_KEY, set); 
 }
 
-
+void
+ProcessingMode::setDrawOverlayFlag (bool set)
+{
+	SET_FLAG(flags, PROCESSING_MODE_FLAG_DRAW_OVERLAY, set);
+}
