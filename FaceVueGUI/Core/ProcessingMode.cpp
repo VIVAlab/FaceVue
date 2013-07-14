@@ -35,6 +35,12 @@ ProcessingMode::drawsOverlay () const
 	return (flags & PROCESSING_MODE_FLAG_DRAW_OVERLAY);
 }
 
+bool
+ProcessingMode::hasCornerImage () const
+{
+	return (falgs & PROCESSING_MODE_FLAG_CORNER_IMAGE);
+}
+
 ProcessingMode::~ProcessingMode()
 {
 }
@@ -62,3 +68,23 @@ ProcessingMode::setDrawOverlayFlag (bool set)
 {
 	SET_FLAG(flags, PROCESSING_MODE_FLAG_DRAW_OVERLAY, set);
 }
+
+void
+ProcessingMode::setCornerImage (const Mat& image)
+{
+	_cornerImage = image;
+	SET_FLAG(flags, PROCESSING_MODE_FLAG_CORNER_IMAGE, true);
+}
+
+void
+ProcessingMode::removeCornerImage ()
+{
+	SET_FLAG(flags, PROCESSING_MODE_FLAG_CORNER_IMAGE, false);
+}
+
+const Mat&
+ProcessingMode::cornerImage ()
+{
+	return _cornerImage;
+}
+

@@ -35,13 +35,22 @@ class ProcessingMode
 		void setRecognitionFlag (bool set);
 
 	private:
+		/*
+		 * Note:
+		 *  corner image is the image at the top right corner of the GUI,
+		 *  this image can represent different things. 
+		 *  In registration mode, it will be the snapshot taken
+		 *  In recognition mode, it will be the recognized face
+		 */
 		enum {
-			PROCESSING_MODE_FLAG_DETECTED  		= 1 << 0,
-			PROCESSING_MODE_FLAG_RECOGNIZED		= 1 << 1,
-			PROCESSING_MODE_FLAG_RETURN_KEY		= 1 << 2,
-			PROCESSING_MODE_FLAG_DRAW_OVERLAY       = 1 << 3
+			PROCESSING_MODE_FLAG_DETECTED  		= 1 << 0,  //a face is detected
+			PROCESSING_MODE_FLAG_RECOGNIZED		= 1 << 1,  //a face is recognized
+			PROCESSING_MODE_FLAG_RETURN_KEY		= 1 << 2,  //the return key is pressed
+			PROCESSING_MODE_FLAG_DRAW_OVERLAY       = 1 << 3,  //the overlay must be drawn
+			PROCESSING_MODE_FLAG_CORNER_IMAGE	= 1 << 4   //corner image exits
 		};
 		unsigned int flags;
+		Mat cornerImage;
 };
 
 

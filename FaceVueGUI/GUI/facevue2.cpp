@@ -129,17 +129,17 @@ FaceVuee::addImg_to_database()
 	if(isImage_filled)
 	{
 		String str = ui.lineEdit->text().toStdString();
-		if (SaveImage(str, image_gray, image_color))
+		if (SaveImage(str, image_gray, image_color)) {
 			process->AddImage (image_gray, str);
-		else {
+		} else {
 			stringstream warnMsg;
 			warnMsg << "Unable to store color or gray-scale image." << endl;
 			warnMsg << "Make sure " << getFaceDir() << " exists and" << endl;
 			warnMsg << "you have permissions to read and write into this directory." << endl;
 			QMessageBox::warning (this, 
-					tr("Warning"),
-					tr(warnMsg.str().c_str()),
-					QMessageBox::Ok);
+					      tr("Warning"),
+					      tr(warnMsg.str().c_str()),
+					      QMessageBox::Ok);
 		}
 
 		image_color.release();
@@ -150,9 +150,7 @@ FaceVuee::addImg_to_database()
 		QImage img (UNKNOWN_IMAGE_RESOURCE_NAME);
 		ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
 		ui.lineEdit->setText("New face added");
-	}
-	else
-	{
+	} else {
 		QMessageBox::warning (this,
 				tr("Warning"),
 				tr("You need to take a snapshot first"),

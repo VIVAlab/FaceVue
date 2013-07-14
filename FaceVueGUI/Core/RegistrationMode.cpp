@@ -23,7 +23,28 @@ RegistrationMode::process (const Mat &image)
 	   && countDown == 0)       //last snapshot was taken at least SNAPSHOT_FRAME_GAP ago
 	{
 		countDown = SNAPSHOT_FRAME_GAP;  //reset the counter
-		gui->process->addImage(image, rect);
+		Mat warp_dst = facevue->align_Face(image, rect);
+		//TODO: Set the corner image & store the gray-scale image and others
+		// look into FaceVuee::OutImage for more info
+		// you need to remove image_gray & other intermediate
+		// processed images from FaceVuee 
+		// ...
+		if(facevue->is_aligned) {
+			int val_x=abs(f->right_eye_x - f->left_eye_x);
+			int val_y=abs(f->mwarp_dsth_y - f->left_eye_y);
+			CvRect rect2 = cvRect(abs(f->right_eye_x-2*val_x),
+					      abs(f->right_eye_y-2*val_y),
+					      rect.width*1.1f,
+					      rect.height*1.1f);
+			if (rect2.x + rect2.width > image.size().width)
+				rect2.width = image.size().width - rect2.x;
+			if (rect2.y + rect2.height > image.size().height)
+				rect2.height = image.size().height - rect2.y;
+			Mat image_color_140 = image(rect2);
+			cv::resize (image_color_140, image_color_140, cvSize (140, 140)); 
+			//
+			//	emit OutImage (warp_dst, image_color_140);
+		}
 	} 
 
 	//draw onto a new image
