@@ -8,12 +8,14 @@
 
 class RegistrationMode : public ProcessingMode
 {
-public:
-	RegistrationMode(FaceVuee *gui, FaceVue *facevue);
-	virtual Mat process (const Mat &img);
+	public:
+		static RegistrationMode* getInstance(FaceVuee *gui, FaceVue *facevue);
+		virtual Mat process (const Mat &img);
 
-private:
-	unsigned int countDown;
+	private:
+		unsigned int countDown;
+		Mat grayImage;
+		RegistrationMode(FaceVuee *gui, FaceVue *facevue);
 };
 
 

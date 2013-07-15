@@ -61,7 +61,6 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 {
 	qRegisterMetaType <Mat>("Mat");
 	isImage_filled=false;
-	flag=true;
 	ui.setupUi(this);
 
 	QImage img(UNKNOWN_IMAGE_RESOURCE_NAME);
@@ -95,13 +94,12 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 		 SLOT(displayErrorUnableToCapture()),
 		 Qt::QueuedConnection);
 
-
 	//TODO: next two signals/slots need to be merged 
-	connect (process,
-		 SIGNAL(OutImage(Mat, Mat)),
-		 this,
-		 SLOT(OutImage(Mat, Mat)), 
-		 Qt::QueuedConnection);
+	connect(process,
+		SIGNAL(OutImage(Mat, Mat)),
+		this,
+		SLOT(OutImage(Mat, Mat)), 
+		Qt::QueuedConnection);
 	connect(process, 
 		SIGNAL(ImageAdded(QString)), 
 		this, 
@@ -158,16 +156,16 @@ FaceVuee::addImg_to_database()
 	}
 }
 
+/**********************************
+ *                                *
+ * image => image_gray            *
+ * image_color_140 => image_color *
+ *                                *
+ **********************************/
 void FaceVuee::OutImage(Mat image, Mat image_color_140)
-{    
-	flag=true;
-
-	//IplImage* img = cvCreateImage(cvSize(128, 128), 8, 3);
-	//image_gray = cvCreateImage(cvSize(128, 128), 8, 3);
-	Mat img (128, 128, CV_8UC3);
+{
 	image_gray = Mat (128, 128, CV_8UC3);
 	cv::cvtColor(image_color_140, image_color_140, CV_RGB2BGR);
-	cv::cvtColor(image, img, CV_GRAY2RGB);
 	cv::cvtColor(image, image_gray, CV_GRAY2RGB);
 	QImage image140 = QImage((uchar *)image_color_140.data,  
 				 image_color_140.cols, 
@@ -178,9 +176,8 @@ void FaceVuee::OutImage(Mat image, Mat image_color_140)
 	cv::cvtColor(image_color_140, image_color_140, CV_BGR2RGB);
 	image_color_140.copyTo(image_color);
 	image.release();
-	img.release();
 	image_color_140.release();
-	isImage_filled=true;
+	isImage_filled = true;
 }
 
 void
@@ -412,6 +409,19 @@ FaceVuee::updateUserInterface ()
 			qDebug () << "unrecognized mode !";
 			break;
 	}
+	//draw the corner image
+	QImage cornerImage;
+	const Mat &cornerImageInMatFormat = process->processingMode()->cornerImage();
+	if (process->processingMode()->hasCornerImage()){
+		cornerImage = QImage((uchar *)cornerImageInMatFormat.data,  
+				cornerImageInMatFormat.cols, 
+				cornerImageInMatFormat.rows, 
+				cornerImageInMatFormat.step,  
+				QImage::Format_RGB888);
+	} else {
+		cornerImage = QImage (UNKNOWN_IMAGE_RESOURCE_NAME);
+	}
+	ui.Lbl_faceR->setPixmap(QPixmap::fromImage(cornerImage));
 
 	emit readyForNextImage();
 }

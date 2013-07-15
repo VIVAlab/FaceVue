@@ -2,6 +2,16 @@
 #include <GUI/facevue2.h>
 #include <QDebug>
 
+RecognitionMode*
+RecognitionMode::getInstance(FaceVuee *gui, FaceVue *facevue)
+{
+	static RecognitionMode* instance = NULL;
+	if (!instance)
+		instance = new RecognitionMode (gui, facevue);
+	return instance;
+}
+
+
 RecognitionMode::RecognitionMode(FaceVuee *gui, FaceVue *facevue)
 	:ProcessingMode (gui, facevue)
 {

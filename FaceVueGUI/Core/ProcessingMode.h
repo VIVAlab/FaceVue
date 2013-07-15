@@ -21,6 +21,8 @@ class ProcessingMode
 		bool isDetected() const;
 		bool isReturnKeyPressed() const;
 		bool drawsOverlay() const;
+		bool hasCornerImage() const;
+		const Mat& cornerImage() const;
 
 		//configuration setter functions
 		void setReturnKeyFlag (bool set);
@@ -33,6 +35,8 @@ class ProcessingMode
 
 		void setDetectionFlag (bool set);
 		void setRecognitionFlag (bool set);
+		void setCornerImage (const Mat& image);
+		void removeCornerImage ();
 
 	private:
 		/*
@@ -50,7 +54,7 @@ class ProcessingMode
 			PROCESSING_MODE_FLAG_CORNER_IMAGE	= 1 << 4   //corner image exits
 		};
 		unsigned int flags;
-		Mat cornerImage;
+		Mat _cornerImage;
 };
 
 

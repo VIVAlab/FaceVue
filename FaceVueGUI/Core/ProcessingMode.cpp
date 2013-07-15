@@ -38,7 +38,7 @@ ProcessingMode::drawsOverlay () const
 bool
 ProcessingMode::hasCornerImage () const
 {
-	return (falgs & PROCESSING_MODE_FLAG_CORNER_IMAGE);
+	return (flags & PROCESSING_MODE_FLAG_CORNER_IMAGE);
 }
 
 ProcessingMode::~ProcessingMode()
@@ -83,7 +83,7 @@ ProcessingMode::removeCornerImage ()
 }
 
 const Mat&
-ProcessingMode::cornerImage ()
+ProcessingMode::cornerImage () const
 {
 	return _cornerImage;
 }

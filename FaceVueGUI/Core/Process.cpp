@@ -10,7 +10,7 @@
 Process::Process(FaceVuee *gui):cap (0)
 {
         face_obj = new FaceVue();
-	mode = new RegistrationMode (gui, face_obj);
+	setProcessingMode (gui, REGISTRATION_MODE);
 #if defined(Q_OS_WIN32)
         face_obj->load_Detection_Model("Models//lbpcascade_frontalface.xml");
         face_obj->load_Landmark_Model("Models//flandmark_model.dat");
@@ -147,14 +147,13 @@ void
 Process::setProcessingMode (FaceVuee *gui, Mode mode)
 {
 	mutex.lock();
-	delete this->mode;
 	switch (mode)
 	{
 		case REGISTRATION_MODE:
-			this->mode = new RegistrationMode(gui, face_obj);
+			this->mode = RegistrationMode::getInstance(gui, face_obj);
 			break;
 		case RECOGNITION_MODE:
-			this->mode = new RecognitionMode(gui, face_obj);
+			this->mode = RecognitionMode::getInstance(gui, face_obj);
 			break;
 	}
 	mutex.unlock();

@@ -2,10 +2,20 @@
 #include <QImage>
 #include <GUI/facevue2.h>
 
-RegistrationMode::RegistrationMode(FaceVuee *gui, FaceVue *facevue)
+RegistrationMode*
+RegistrationMode::getInstance (FaceVuee *gui, FaceVue *facevue)
+{
+	static RegistrationMode *instance = NULL;
+	if (!instance)
+		instance = new RegistrationMode (gui, facevue);
+	return instance;
+}
+
+RegistrationMode::RegistrationMode (FaceVuee *gui, FaceVue *facevue)
 	:ProcessingMode (gui, facevue)
 {
 	countDown = 0;
+	grayImage = Mat (128, 128, CV_8UC3);
 }
 
 Mat
@@ -22,30 +32,31 @@ RegistrationMode::process (const Mat &image)
 	   && f->index != -1 	    //a face is detected
 	   && countDown == 0)       //last snapshot was taken at least SNAPSHOT_FRAME_GAP ago
 	{
-		countDown = SNAPSHOT_FRAME_GAP;  //reset the counter
 		Mat warp_dst = facevue->align_Face(image, rect);
-		//TODO: Set the corner image & store the gray-scale image and others
-		// look into FaceVuee::OutImage for more info
-		// you need to remove image_gray & other intermediate
-		// processed images from FaceVuee 
-		// ...
-		if(facevue->is_aligned) {
-			int val_x=abs(f->right_eye_x - f->left_eye_x);
-			int val_y=abs(f->mwarp_dsth_y - f->left_eye_y);
-			CvRect rect2 = cvRect(abs(f->right_eye_x-2*val_x),
-					      abs(f->right_eye_y-2*val_y),
+		if(facevue->is_aligned) 
+		{
+			countDown = SNAPSHOT_FRAME_GAP;  //reset the counter
+			int val_x = abs(f->right_eye_x - f->left_eye_x);
+			int val_y = abs(f->mouth_y - f->left_eye_y);
+			CvRect rect2 = cvRect(max(f->right_eye_x-2*val_x, 0),
+					      max(f->right_eye_y-2*val_y, 0),
 					      rect.width*1.1f,
 					      rect.height*1.1f);
 			if (rect2.x + rect2.width > image.size().width)
 				rect2.width = image.size().width - rect2.x;
 			if (rect2.y + rect2.height > image.size().height)
 				rect2.height = image.size().height - rect2.y;
-			Mat image_color_140 = image(rect2);
-			cv::resize (image_color_140, image_color_140, cvSize (140, 140)); 
-			//
-			//	emit OutImage (warp_dst, image_color_140);
+			Mat cornerImage = image(rect2);
+			cv::resize (cornerImage, cornerImage, cvSize (140, 140)); 
+			cv::cvtColor (cornerImage, cornerImage, CV_RGB2BGR);
+
+			//set the corner image
+			setCornerImage (cornerImage);
+
+			//keep the warp_img for registration
+			cv::cvtColor (warp_dst, grayImage, CV_GRAY2RGB);
 		}
-	} 
+	}
 
 	//draw onto a new image
 	Mat img;
