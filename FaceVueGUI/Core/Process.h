@@ -24,6 +24,7 @@ enum Mode {
 	RECOGNITION_MODE
 };
 
+
 class FaceVuee;  //foreward declaration
 
 class Process : public  QObject

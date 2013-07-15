@@ -8,38 +8,39 @@ static int code[] = {0,1,2,3,4,6,7,8,12,14,15,16,24,28,30,
 		     193,195,199,207,223,224,225,227,231,239,
 		     240,241,243,247,248,249,251,252,253,254,255};
 
-FaceRecog::FaceRecog(){
-
+FaceRecog::FaceRecog()
+{
 }
+
 FaceRecog::~FaceRecog()
 {
-    delete[] clusters;
+    delete [] clusters;
 }
 
 void FaceRecog::BoWInit(QVector<QString> name_file)
 {
-    Face_database.clear();
-    Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
-    ExtractKeypoints(temp, 4, 3 );
-    his_len=0;
-    for(unsigned int i=0;i<centers.size();i++)
-        his_len+=centers[i].rows;
-    for (unsigned int i=0; i< Face_database.size(); i++)
-        HistCreator(Face_database[i].image, Face_database[i].train_data_H);
+	Face_database.clear();
+	Mat temp=Mat::zeros(128,128,DataType<uchar>::type );
+	ExtractKeypoints(temp, 4, 3 );
+	his_len=0;
+	for(unsigned int i=0;i<centers.size();i++)
+		his_len+=centers[i].rows;
+	for (unsigned int i=0; i< Face_database.size(); i++)
+		HistCreator(Face_database[i].image, Face_database[i].train_data_H);
 }
 
-void FaceRecog::AddNewFace(Mat img,Mat face_descriptor, string name){
+void FaceRecog::AddNewFace(Mat img, Mat face_descriptor, string name)
+{
+	FaceSample face2;
+	if(img.channels()==3)
+		cvtColor(img,face2.image,CV_RGB2GRAY);
+	else
+		img.copyTo(face2.image);
 
-    FaceSample face2;
-    if(img.channels()==3)
-        cvtColor(img,face2.image,CV_RGB2GRAY);
-    else
-        img.copyTo(face2.image);
-
-    face2.file_address = name;
-    face2.label_s = name;
-    face_descriptor.copyTo(face2.train_data_H);
-    Face_database.push_back(face2);
+	face2.file_address = name;
+	face2.label_s = name;
+	face_descriptor.copyTo(face2.train_data_H);
+	Face_database.push_back(face2);
 }
 
 void FaceRecog::DeleteFace(const QString &name)
@@ -57,52 +58,54 @@ void FaceRecog::DeleteFace(const QString &name)
 
 void FaceRecog::set_Description_Model(const descriptionModel &model)
 {
-    m_patch = model.m_patch;
-    n_patch = model.n_patch;
-    window = model.window;
-    K_cluster = model.K_cluster;
+	m_patch = model.m_patch;
+	n_patch = model.n_patch;
+	window = model.window;
+	K_cluster = model.K_cluster;
 
-    clusters = new uchar[m_patch*n_patch*K_cluster*59];
+	clusters = new uchar[m_patch*n_patch*K_cluster*59];
 
-    for(int i=0; i < m_patch*n_patch*K_cluster*59 ; i++)
-        clusters[i] = model.clusters[i];
+	for(int i=0; i < m_patch*n_patch*K_cluster*59 ; i++)
+		clusters[i] = model.clusters[i];
 
 }
 
-void FaceRecog::set_recognition_Model(const recognitionModel &model)
+void 
+FaceRecog::set_recognition_Model(const recognitionModel &model)
 {
-    globalThreshold = model.globalThreshold;
-    binThreshold = model.binThreshold;
+	globalThreshold = model.globalThreshold;
+	binThreshold = model.binThreshold;
 }
 
-void FaceRecog::LBPFilter(Mat& input,Mat& dest)
+void 
+FaceRecog::LBPFilter(Mat& input,Mat& dest)
 {
-    dest = Mat::zeros(input.rows,input.cols,CV_8U);
-    for(int i=1;i<input.rows-1;i++)
-    {
-        for(int j=1;j<input.cols-1;j++)
-        {
-            uchar b = input.at<uchar>(i,j);
-            uchar out = 0;
-            out += b < input.at<uchar>(i-1,j-1) ? 0:1;
-            out += b < input.at<uchar>(i-1,j) ? 0:2;
-            out += b < input.at<uchar>(i-1,j+1) ? 0:4;
-            out += b < input.at<uchar>(i,j-1) ? 0:8;
-            out += b < input.at<uchar>(i,j+1) ? 0:16;
-            out += b < input.at<uchar>(i+1,j-1) ? 0:32;
-            out += b < input.at<uchar>(i+1,j) ? 0:64;
-            out += b < input.at<uchar>(i+1,j+1) ? 0:128;
+	dest = Mat::zeros(input.rows,input.cols,CV_8U);
+	for(int i=1;i<input.rows-1;i++)
+	{
+		for(int j=1;j<input.cols-1;j++)
+		{
+			uchar b = input.at<uchar>(i, j);
+			uchar out = 0;
+			out += b < input.at<uchar>(i-1, j-1) ? 0:1;
+			out += b < input.at<uchar>(i-1, j) ? 0:2;
+			out += b < input.at<uchar>(i-1, j+1) ? 0:4;
+			out += b < input.at<uchar>(i, j-1) ? 0:8;
+			out += b < input.at<uchar>(i, j+1) ? 0:16;
+			out += b < input.at<uchar>(i+1, j-1) ? 0:32;
+			out += b < input.at<uchar>(i+1, j) ? 0:64;
+			out += b < input.at<uchar>(i+1, j+1) ? 0:128;
 
 
-            dest.at<uchar>(i,j) = 0;
-            for(int k = 0; k < 58; k++){
-                if(out == code[k]){
-                    dest.at<uchar>(i,j) = k+1;
-                    break;
-                }
-            }
-        }
-    }
+			dest.at<uchar>(i,j) = 0;
+			for(int k = 0; k < 58; k++){
+				if(out == code[k]){
+					dest.at<uchar>(i,j) = k+1;
+					break;
+				}
+			}
+		}
+	}
 }
 
 void FaceRecog::norm_(Mat x, Mat *H_data, int n){
@@ -167,26 +170,27 @@ int FaceRecog::NearestCenter(Mat data, Mat centers){
     return MaxFinder(dis);
 }
 
-void FaceRecog::HistCreator(Mat image, Mat &hist_imgs){
+void 
+FaceRecog::HistCreator(Mat image, Mat &hist_imgs)
+{
+	Mat t1=Mat::zeros(keyps.size(), 59, DataType<uchar>::type);
+	LBP(image, &t1);
 
-    Mat t1=Mat::zeros(keyps.size(),59,DataType<uchar>::type);
-    LBP(image,&t1);
+	hist_imgs = Mat::zeros(1, (his_len), DataType<uchar>::type);
 
-    hist_imgs = Mat::zeros(1,(his_len),DataType<uchar>::type);
+	int stack_num=0;
+	for(int j=0; j<t1.rows; j++){
 
-    int stack_num=0;
-    for(int j=0;j<t1.rows;j++){
+		Mat g =Mat::zeros( 1, t1.cols,DataType<uchar>::type);
+		t1.row(j).copyTo(g);
 
-        Mat g =Mat::zeros( 1, t1.cols,DataType<uchar>::type);
-        t1.row(j).copyTo(g);
-
-        int a = NearestCenter( g, centers [ key_labels[j] - 1]);
-        hist_imgs.at<uchar> (0, ( a + stack_num)) += 1;
-        if(j!=(t1.rows-1)){
-            if(key_labels[j]!=key_labels[j+1])
-                stack_num+=centers[key_labels[j] - 1].rows;
-        }
-    }
+		int a = NearestCenter( g, centers [ key_labels[j] - 1]);
+		hist_imgs.at<uchar> (0, ( a + stack_num)) += 1;
+		if(j!=(t1.rows-1)){
+			if(key_labels[j]!=key_labels[j+1])
+				stack_num+=centers[key_labels[j] - 1].rows;
+		}
+	}
 }
 
 
@@ -272,13 +276,13 @@ string FaceRecog::Predictor( Mat test){
 }
 
 string FaceRecog::Detector(Mat test_data){
-    string l="";
-    if(!Face_database.empty()){
-        Mat test_data_H;
-        HistCreator(test_data,test_data_H);
-        l=Predictor(test_data_H);
-    }else
-        l = "Unknown";
+	string l = "";
+	if(!Face_database.empty()) {
+		Mat test_data_H;
+		HistCreator (test_data, test_data_H);
+		l = Predictor(test_data_H);
+	} else
+		l = "Unknown";
 
-    return l;
+	return l;
 }

@@ -51,6 +51,7 @@ FaceVue::add_to_Database(Mat image, string name)
 
 	recognition->HistCreator (face2.image, face2.train_data_H);
 	recognition->Face_database.push_back (face2);
+	qDebug () << "recognition database size: " << recognition->Face_database.size();
 }
 
 //remove image from Databases
@@ -193,7 +194,7 @@ bool FaceVue::load_Recognition_Model(const string &filename)
 void FaceVue::init_Recognition_Module(descriptionModel description_Model,
                                       recognitionModel recognition_Model)
 {
-    recognition=new FaceRecog();
+    recognition = new FaceRecog();
     recognition->set_Description_Model(description_Model);
     recognition->set_recognition_Model(recognition_Model);
 }

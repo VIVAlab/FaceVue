@@ -94,12 +94,7 @@ FaceVuee::FaceVuee(QWidget *parent, Qt::WindowFlags flags)
 		 SLOT(displayErrorUnableToCapture()),
 		 Qt::QueuedConnection);
 
-	//TODO: next two signals/slots need to be merged 
-	connect(process,
-		SIGNAL(OutImage(Mat, Mat)),
-		this,
-		SLOT(OutImage(Mat, Mat)), 
-		Qt::QueuedConnection);
+	//TODO: use QAbstractItemModel to remove this signal here !
 	connect(process, 
 		SIGNAL(ImageAdded(QString)), 
 		this, 
@@ -147,7 +142,7 @@ FaceVuee::addImg_to_database()
 
 		QImage img (UNKNOWN_IMAGE_RESOURCE_NAME);
 		ui.Lbl_faceR->setPixmap(QPixmap::fromImage(img));
-		ui.lineEdit->setText("New face added");
+		ui.lineEdit->setText("");
 	} else {
 		QMessageBox::warning (this,
 				tr("Warning"),
@@ -300,7 +295,7 @@ FaceVuee::LoadAllImages()
 			QString rgb_filename = image_name + QString (COLOR_POSTFIX);
 			if (list.contains (rgb_filename))
 			{
-				Mat gray_image = imread (gry_filename.toStdString());
+				Mat gray_image = imread (gry_filename.toStdString(), CV_LOAD_IMAGE_GRAYSCALE);
 				process->AddImage (gray_image, image_name.toStdString());
 			}
 		}
