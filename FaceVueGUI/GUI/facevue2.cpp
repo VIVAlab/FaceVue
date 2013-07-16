@@ -291,7 +291,7 @@ FaceVuee::LoadAllImages()
 		if (filename.endsWith (gry))
 		{
 			QString image_name = filename.left (filename.length() - gry.size());
-			QString gry_filename = filename;
+			QString gry_filename = getFaceDir() + filename;
 			QString rgb_filename = image_name + QString (COLOR_POSTFIX);
 			if (list.contains (rgb_filename))
 			{
